@@ -1,5 +1,5 @@
-# Imagen base oficial de Coder con escritorio
-FROM codercom/enterprise-desktop:ubuntu
+# Imagen base oficial de Coder sin escritorio (añadimos KDE + KasmVNC)
+FROM codercom/enterprise-base:ubuntu
 
 LABEL org.opencontainers.image.title="coder-mks-developer" \
       org.opencontainers.image.description="Coder Desktop extendido con utilidades dev, Docker, IA CLI y tooling de consola" \
@@ -10,8 +10,9 @@ USER root
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Paquetes comunes + dependencias típicas de KasmVNC y servicios gráficos
-RUN apt-get update && \
+# Paquetes comunes + KDE + dependencias de KasmVNC y servicios gráficos
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:mozillateam/ppa && \
     printf 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' > /etc/apt/preferences.d/mozillateam-firefox && \
@@ -22,7 +23,7 @@ RUN apt-get update && \
         git \
         sudo \
         locales tzdata \
-        # deps X11 / audio / GL que suelen pedir Kasm y apps gráficas
+        # deps X11 / audio / GL
         dbus-x11 \
         xauth \
         x11-xserver-utils \
@@ -30,6 +31,12 @@ RUN apt-get update && \
         libgl1 \
         libgl1-mesa-dri \
         mesa-utils \
+        # KDE Plasma (sesión X11) + utilidades básicas
+        kde-plasma-desktop \
+        konsole \
+        dolphin \
+        plasma-discover-backend-snap || true && \
+    apt-get install -y --no-install-recommends \
         # herramientas de desarrollo genéricas
         build-essential \
         pkg-config \
@@ -53,6 +60,15 @@ RUN apt-get update && \
         direnv \
         zip unzip p7zip-full \
     && rm -rf /var/lib/apt/lists/*
+
+# KasmVNC server (Ubuntu Noble)
+RUN KASM_VERSION="1.4.0" && \
+    DEB_PKG="kasmvncserver_noble_${KASM_VERSION}_amd64.deb" && \
+    curl -fL "https://github.com/kasmtech/KasmVNC/releases/download/v${KASM_VERSION}/${DEB_PKG}" -o "/tmp/${DEB_PKG}" && \
+    apt-get update && apt-get install -y --no-install-recommends "/tmp/${DEB_PKG}" && \
+    rm "/tmp/${DEB_PKG}" && \
+    update-alternatives --set x-session-manager /usr/bin/startplasma-x11 || true && \
+    rm -rf /var/lib/apt/lists/*
 
 # JupyterLab (CLI) para módulo de Coder
 RUN pipx install --include-deps jupyterlab && \
