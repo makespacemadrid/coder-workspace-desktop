@@ -3,7 +3,8 @@ FROM codercom/enterprise-desktop:ubuntu
 
 LABEL org.opencontainers.image.title="coder-mks-developer" \
       org.opencontainers.image.description="Coder Desktop extendido con utilidades dev, Docker, IA CLI y tooling de consola" \
-      org.opencontainers.image.source="https://github.com/makespacemadrid/coder-workspace-desktop"
+      org.opencontainers.image.source="https://github.com/makespacemadrid/coder-workspace-desktop" \
+      org.opencontainers.image.url="ghcr.io/makespacemadrid/coder-mks-developer:latest"
 
 USER root
 
