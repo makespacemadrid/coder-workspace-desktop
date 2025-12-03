@@ -11,7 +11,8 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Paquetes base, escritorio y apps de diseño
-RUN apt-get update && \
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:mozillateam/ppa && \
     printf 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' > /etc/apt/preferences.d/mozillateam-firefox && \
@@ -53,7 +54,27 @@ RUN apt-get update && \
         kicad-footprints \
         kicad-packages3d \
         kicad-templates \
+        fritzing \
+        fritzing-data \
+        fritzing-parts \
+        simulide \
+        wine64 \
+        wine32 \
+        winbind \
     && rm -rf /var/lib/apt/lists/*
+
+# OrcaSlicer (AppImage) y LaserGRBL (Wine)
+RUN ORCA_VERSION="2.1.1" && \
+    ORCA_URL="https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_V${ORCA_VERSION}.AppImage" && \
+    curl -fL "${ORCA_URL}" -o /usr/local/bin/orcaslicer && \
+    chmod +x /usr/local/bin/orcaslicer && \
+    mkdir -p /opt/lasergrbl && \
+    LASERGRBL_URL="https://github.com/arkypita/LaserGRBL/releases/download/v5.7.10/LaserGRBL.5.7.10.zip" && \
+    curl -fL "${LASERGRBL_URL}" -o /opt/lasergrbl/LaserGRBL.zip && \
+    apt-get update && apt-get install -y --no-install-recommends unzip && \
+    unzip /opt/lasergrbl/LaserGRBL.zip -d /opt/lasergrbl && \
+    rm /opt/lasergrbl/LaserGRBL.zip && \
+    rm -rf /var/lib/apt/lists/*
 
 # Locales
 RUN locale-gen es_ES.UTF-8 en_US.UTF-8 && \

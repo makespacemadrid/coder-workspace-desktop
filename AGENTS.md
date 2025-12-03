@@ -2,7 +2,7 @@
 
 ## Imágenes
 - `ghcr.io/makespacemadrid/coder-mks-developer:latest` (build desde `Docker-Images/Developer/Dockerfile`). Incluye escritorio XFCE/KasmVNC, Docker Engine, Node.js 20, CLIs de IA (Codex, Claude, Gemini) y tooling dev.
-- `ghcr.io/makespacemadrid/coder-mks-design:latest` (build desde `Docker-Images/Designer/Dockerfile`). Enfoque en diseño 2D/3D y electrónica: Inkscape, GIMP, Krita, Blender, FreeCAD, OpenSCAD, PrusaSlicer, MeshLab, LibreCAD, KiCad.
+- `ghcr.io/makespacemadrid/coder-mks-design:latest` (build desde `Docker-Images/Designer/Dockerfile`). Enfoque en diseño 2D/3D y electrónica: Inkscape, GIMP, Krita, Blender, FreeCAD, OpenSCAD, PrusaSlicer, OrcaSlicer, MeshLab, LibreCAD, KiCad, Fritzing, SimulIDE, LaserGRBL (Wine).
 
 ## Templates
 - `DeveloperAdvanced`: acceso directo al Docker del host (monta `/var/run/docker.sock`), GPUs habilitadas por defecto, puertos opcionales, home persistente.

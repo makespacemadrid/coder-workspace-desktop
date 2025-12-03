@@ -13,8 +13,9 @@ Template con escritorio XFCE/KasmVNC y herramientas de diseño 2D/3D + electrón
 ## Apps incluidas (imagen base)
 - Inkscape, GIMP, Krita (2D)
 - Blender, FreeCAD, OpenSCAD, MeshLab, LibreCAD (3D/CAD)
-- PrusaSlicer (impresión 3D)
-- KiCad (EDA, con footprints/símbolos/templates)
+- PrusaSlicer y OrcaSlicer (impresión 3D)
+- KiCad (EDA, con footprints/símbolos/templates), Fritzing, SimulIDE
+- LaserGRBL (vía Wine)
 - Firefox (.deb, sin snap)
 
 ## Parámetros
