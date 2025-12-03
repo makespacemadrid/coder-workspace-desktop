@@ -8,7 +8,7 @@ Imagen de Coder Desktop extendida con utilidades de desarrollo, Docker y CLI par
 docker build -t coder-mks-develop .
 ```
 
-También se publica automáticamente en GHCR al hacer push a `main`/`master`: `ghcr.io/<org-o-usuario>/coder-mks-develop:latest`.
+También se publica automáticamente en GHCR al hacer push a `main`/`master`: `ghcr.io/makespacemadrid/coder-mks-develop:latest`.
 
 ## Herramientas incluidas
 
