@@ -3,7 +3,7 @@ FROM codercom/enterprise-desktop:ubuntu
 
 LABEL org.opencontainers.image.title="coder-mks-develop" \
       org.opencontainers.image.description="Coder Desktop extendido con utilidades dev, Docker, IA CLI y tooling de consola" \
-      org.opencontainers.image.source="https://github.com/darkjavi/coder-workspace-desktop"
+      org.opencontainers.image.source="https://github.com/makespacemadrid/coder-workspace-desktop"
 
 USER root
 
@@ -21,14 +21,14 @@ RUN apt-get update && \
         dbus-x11 \
         xauth \
         x11-xserver-utils \
-        libasound2 \
+        libasound2t64 \
         libgl1 \
         libgl1-mesa-dri \
         mesa-utils \
         # herramientas de desarrollo genéricas
         build-essential \
         pkg-config \
-        python3 python3-venv python3-pip pipx uv \
+        python3 python3-venv python3-pip pipx \
         # navegador dentro del KasmVNC
         firefox \
         # utilidades extra y tooling de consola
@@ -43,7 +43,7 @@ RUN apt-get update && \
         ripgrep \
         fzf \
         bat \
-        exa \
+        eza \
         tmux \
         direnv \
         zip unzip p7zip-full \
