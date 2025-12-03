@@ -61,20 +61,8 @@ RUN dpkg --add-architecture i386 && \
         zip unzip p7zip-full \
     && rm -rf /var/lib/apt/lists/*
 
-# KasmVNC server (Ubuntu Noble)
-RUN KASM_VERSION="1.4.0" && \
-    DEB_PKG="kasmvncserver_noble_${KASM_VERSION}_amd64.deb" && \
-    curl -fL "https://github.com/kasmtech/KasmVNC/releases/download/v${KASM_VERSION}/${DEB_PKG}" -o "/tmp/${DEB_PKG}" && \
-    apt-get update && apt-get install -y --no-install-recommends "/tmp/${DEB_PKG}" && \
-    rm "/tmp/${DEB_PKG}" && \
-    update-alternatives --set x-session-manager /usr/bin/startplasma-x11 || true && \
-    rm -rf /var/lib/apt/lists/*
-
-# JupyterLab (CLI) para módulo de Coder
-RUN pipx install --include-deps jupyterlab && \
-    mkdir -p /root/.local/bin /home/coder/.local/bin && \
-    ln -sf /usr/local/bin/jupyter-lab /root/.local/bin/jupyter-lab && \
-    ln -sf /usr/local/bin/jupyter-lab /home/coder/.local/bin/jupyter-lab
+# KasmVNC viene como módulo de Coder; solo dejamos KDE como session manager
+RUN update-alternatives --set x-session-manager /usr/bin/startplasma-x11 || true
 
 # Locales (puedes ajustar a gusto)
 RUN locale-gen es_ES.UTF-8 en_US.UTF-8 && \
