@@ -1,14 +1,14 @@
-# coder-mks-develop
+# coder-mks-developer
 
 Imagen de Coder Desktop extendida con utilidades de desarrollo, Docker y CLI para IA (OpenAI/Codex, Claude y Gemini).
 
 ## Build
 
 ```bash
-docker build -t coder-mks-develop .
+docker build -t coder-mks-developer Docker-Images/Developer
 ```
 
-También se publica automáticamente en GHCR al hacer push a `main`/`master`: `ghcr.io/makespacemadrid/coder-mks-develop:latest`.
+También se publica automáticamente en GHCR al hacer push a `main`/`master`: `ghcr.io/makespacemadrid/coder-mks-developer:latest`.
 
 ## Herramientas incluidas
 

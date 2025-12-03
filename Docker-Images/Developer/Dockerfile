@@ -54,6 +54,12 @@ RUN apt-get update && \
         zip unzip p7zip-full \
     && rm -rf /var/lib/apt/lists/*
 
+# JupyterLab (CLI) para módulo de Coder
+RUN pipx install --include-deps jupyterlab && \
+    mkdir -p /root/.local/bin /home/coder/.local/bin && \
+    ln -sf /usr/local/bin/jupyter-lab /root/.local/bin/jupyter-lab && \
+    ln -sf /usr/local/bin/jupyter-lab /home/coder/.local/bin/jupyter-lab
+
 # Locales (puedes ajustar a gusto)
 RUN locale-gen es_ES.UTF-8 en_US.UTF-8 && \
     update-locale LANG=es_ES.UTF-8
