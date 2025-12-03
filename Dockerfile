@@ -11,6 +11,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Paquetes comunes + dependencias típicas de KasmVNC y servicios gráficos
 RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:mozillateam/ppa && \
+    printf 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' > /etc/apt/preferences.d/mozillateam-firefox && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl wget \
@@ -29,7 +33,7 @@ RUN apt-get update && \
         build-essential \
         pkg-config \
         python3 python3-venv python3-pip pipx \
-        # navegador dentro del KasmVNC
+        # navegador dentro del KasmVNC (via PPA, evita snap)
         firefox \
         # utilidades extra y tooling de consola
         jq \
