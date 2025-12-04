@@ -221,8 +221,8 @@ module "code-server" {
 
 module "vscode" {
   count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/vscode/coder"
-  version  = "~> 1.0"
+  source   = "registry.coder.com/coder/vscode-desktop/coder"
+  version  = "1.2.0"
   agent_id = coder_agent.main.id
 }
 
