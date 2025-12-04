@@ -14,6 +14,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y universe && \
     add-apt-repository -y ppa:mozillateam/ppa && \
     printf 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' > /etc/apt/preferences.d/mozillateam-firefox && \
     apt-get update && \
