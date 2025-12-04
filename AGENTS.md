@@ -1,6 +1,6 @@
 # Plantillas de workspaces Coder
 
-> Nota: puedes añadir un `AGENTS.local` (no versionado) con indicaciones privadas o específicas del entorno.
+> Nota: puedes añadir un `AGENTS.private.md` (no versionado) con indicaciones privadas o específicas del entorno.
 
 ## Imágenes
 - `ghcr.io/makespacemadrid/coder-mks-developer:latest` (build desde `Docker-Images/Developer/Dockerfile`). Incluye escritorio XFCE/KasmVNC, Docker Engine, Node.js 20, CLIs de IA (Codex, Claude, Gemini) y tooling dev.

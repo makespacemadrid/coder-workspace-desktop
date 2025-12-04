@@ -30,4 +30,4 @@ __pycache__/
 tmp/
 
 # Local agent notes
-AGENTS.local
+AGENTS.private.md
