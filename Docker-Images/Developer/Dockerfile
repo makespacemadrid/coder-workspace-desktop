@@ -34,7 +34,7 @@ RUN dpkg --add-architecture i386 && \
         # KDE Plasma (sesión X11) + utilidades básicas
         plasma-desktop \
         konsole \
-        dolphin \
+        dolphin && \
     apt-get install -y --no-install-recommends \
         # herramientas de desarrollo genéricas
         build-essential \
