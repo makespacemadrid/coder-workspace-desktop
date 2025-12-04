@@ -70,6 +70,16 @@ RUN locale-gen es_ES.UTF-8 en_US.UTF-8 && \
 ENV LANG=es_ES.UTF-8 \
     LC_ALL=es_ES.UTF-8
 
+# Utilidades NVIDIA para `nvidia-smi` cuando se habilitan GPUs
+RUN set -e; \
+    apt-get update; \
+    if ! apt-get install -y --no-install-recommends nvidia-utils-535; then \
+      if ! apt-get install -y --no-install-recommends nvidia-utils-530; then \
+        apt-get install -y --no-install-recommends nvidia-utils-525 || true; \
+      fi; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*
+
 # Desactivar bloqueo/ahorro de pantalla (KDE) y dejar accesos directos en Desktop
 RUN printf '[Daemon]\nTimeout=0\nLockOnResume=false\nLockOnSuspend=false\nAutolock=false\n' > /etc/xdg/kscreenlockerrc && \
     mkdir -p /etc/skel/Desktop && \

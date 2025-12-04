@@ -98,6 +98,16 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     apt-get install -y --no-install-recommends code && \
     rm -rf /var/lib/apt/lists/*
 
+# Utilidades NVIDIA para poder usar `nvidia-smi` cuando hay GPUs
+RUN set -e; \
+    apt-get update; \
+    if ! apt-get install -y --no-install-recommends nvidia-utils-535; then \
+      if ! apt-get install -y --no-install-recommends nvidia-utils-530; then \
+        apt-get install -y --no-install-recommends nvidia-utils-525 || true; \
+      fi; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*
+
 # GitHub Desktop (shiftkey build) y Claude Desktop (unofficial build)
 ARG GITHUB_DESKTOP_VERSION=3.4.13-linux1
 ARG GITHUB_DESKTOP_DEB_URL=https://github.com/shiftkey/desktop/releases/download/release-${GITHUB_DESKTOP_VERSION}/GitHubDesktop-linux-amd64-${GITHUB_DESKTOP_VERSION}.deb
