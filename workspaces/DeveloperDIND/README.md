@@ -1,7 +1,7 @@
 ---
 display_name: MakeSpace Dev DinD
 description: Entorno de desarrollo con Docker in Docker y GPU opcional
-icon: ../../assets/icons/dind.svg
+icon: icon.svg
 maintainer_github: makespacemadrid
 tags: [docker, dind, gpu, workspace, makespace]
 ---
