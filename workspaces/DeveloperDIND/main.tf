@@ -10,8 +10,8 @@ terraform {
 }
 
 variable "docker_socket" {
-  default     = "/var/run/docker.sock"
-  description = "(Optional) Docker socket URI"
+  default     = "unix:///var/run/docker.sock"
+  description = "(Optional) Docker socket URI (use unix:// prefix)"
   type        = string
 }
 
