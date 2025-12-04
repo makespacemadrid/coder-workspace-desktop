@@ -88,7 +88,7 @@ resource "coder_agent" "main" {
   }
 }
 
-# Módulos esenciales (KasmVNC + utilidades)
+# Módulos: solo acceso gráfico (KasmVNC) y login
 module "kasmvnc" {
   count               = data.coder_workspace.me.start_count
   source              = "registry.coder.com/coder/kasmvnc/coder"
@@ -96,28 +96,6 @@ module "kasmvnc" {
   agent_id            = coder_agent.main.id
   desktop_environment = "xfce"
   subdomain           = true
-}
-
-module "filebrowser" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/filebrowser/coder"
-  version  = "1.1.3"
-  agent_id = coder_agent.main.id
-}
-
-module "code-server" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/code-server/coder"
-  version  = "~> 1.0"
-  agent_id = coder_agent.main.id
-  order    = 1
-}
-
-module "git-config" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/git-config/coder"
-  version  = "1.0.32"
-  agent_id = coder_agent.main.id
 }
 
 module "coder-login" {

@@ -1,5 +1,5 @@
-# Imagen base para diseño 2D/3D y electrónica (MakeSpace)
-FROM codercom/enterprise-desktop:ubuntu
+# Imagen base para diseño 2D/3D y electrónica (MakeSpace) con KDE Plasma
+FROM codercom/enterprise-base:ubuntu
 
 LABEL org.opencontainers.image.title="coder-mks-design" \
       org.opencontainers.image.description="Entorno de escritorio para diseño 2D/3D y electrónica (FreeCAD, Inkscape, GIMP, KiCad, Blender, PrusaSlicer, OpenSCAD)" \
@@ -38,6 +38,10 @@ RUN dpkg --add-architecture i386 && \
         zip unzip p7zip-full \
         # navegador para KasmVNC
         firefox \
+        # escritorio KDE Plasma
+        plasma-desktop \
+        konsole \
+        dolphin \
         # Herramientas de diseño 2D/3D y electrónica
         inkscape \
         gimp \
@@ -63,7 +67,7 @@ RUN dpkg --add-architecture i386 && \
         winbind \
     && rm -rf /var/lib/apt/lists/*
 
-# OrcaSlicer (AppImage) y LaserGRBL (Wine)
+# OrcaSlicer (AppImage), LaserGRBL (Wine) y VisiCut (.deb)
 RUN ORCA_VERSION="2.1.1" && \
     ORCA_URL="https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_V${ORCA_VERSION}.AppImage" && \
     curl -fL "${ORCA_URL}" -o /usr/local/bin/orcaslicer && \
@@ -74,6 +78,9 @@ RUN ORCA_VERSION="2.1.1" && \
     apt-get update && apt-get install -y --no-install-recommends unzip && \
     unzip /opt/lasergrbl/LaserGRBL.zip -d /opt/lasergrbl && \
     rm /opt/lasergrbl/LaserGRBL.zip && \
+    curl -fL "https://github.com/t-oster/VisiCut/releases/download/2.1/visicut_2.1%2Bdevel-1_all.deb" -o /tmp/visicut.deb && \
+    apt-get update && apt-get install -y --no-install-recommends /tmp/visicut.deb && \
+    rm /tmp/visicut.deb && \
     rm -rf /var/lib/apt/lists/*
 
 # Locales

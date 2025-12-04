@@ -1,4 +1,4 @@
-# Imagen base oficial de Coder sin escritorio (añadimos KDE + KasmVNC)
+# Imagen base oficial de Coder sin escritorio (añadimos KDE Plasma)
 FROM codercom/enterprise-base:ubuntu
 
 LABEL org.opencontainers.image.title="coder-mks-developer" \
@@ -32,10 +32,9 @@ RUN dpkg --add-architecture i386 && \
         libgl1-mesa-dri \
         mesa-utils \
         # KDE Plasma (sesión X11) + utilidades básicas
-        kde-plasma-desktop \
+        plasma-desktop \
         konsole \
         dolphin \
-        plasma-discover-backend-snap || true && \
     apt-get install -y --no-install-recommends \
         # herramientas de desarrollo genéricas
         build-essential \
