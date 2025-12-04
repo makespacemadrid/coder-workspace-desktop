@@ -79,6 +79,12 @@ resource "coder_agent" "main" {
       sudo ln -s /root/.opencode /home/coder/.opencode || true
     fi
 
+    # Alinear binarios instalados como root (ej. jupyter)
+    sudo mkdir -p /home/coder/.local/bin
+    if [ -x /root/.local/bin/jupyter-lab ] && [ ! -e /home/coder/.local/bin/jupyter-lab ]; then
+      sudo ln -sf /root/.local/bin/jupyter-lab /home/coder/.local/bin/jupyter-lab || true
+    fi
+
     # Inicializar /etc/skel la primera vez
     if [ ! -f ~/.init_done ]; then
       cp -rT /etc/skel ~ || true
