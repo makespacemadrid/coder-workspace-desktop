@@ -45,6 +45,11 @@ RUN dpkg --add-architecture i386 && \
     && rm -rf /var/lib/apt/lists/*
 
 # Wrapper para KasmVNC: si se pide "xfce", arrancar MATE
+RUN printf '#!/bin/sh\nexec mate-session\n' > /usr/local/bin/startxfce4 && \
+    chmod +x /usr/local/bin/startxfce4 && \
+    ln -sf /usr/local/bin/startxfce4 /usr/bin/startxfce4
+
+# Wrapper para KasmVNC: si se pide "xfce", arrancar MATE
 RUN printf '#!/bin/sh\nexec mate-session\n' > /usr/local/bin/startxfce4 && chmod +x /usr/local/bin/startxfce4
 
 # Locales por defecto

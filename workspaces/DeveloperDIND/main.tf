@@ -91,9 +91,11 @@ resource "coder_agent" "main" {
 
     # Alinear binarios instalados como root (ej. jupyter)
     sudo mkdir -p /home/coder/.local/bin
-    if [ -x /root/.local/bin/jupyter-lab ] && [ ! -e /home/coder/.local/bin/jupyter-lab ]; then
-      sudo ln -sf /root/.local/bin/jupyter-lab /home/coder/.local/bin/jupyter-lab || true
-    fi
+    for path in /root/.local/bin/jupyter-lab /usr/local/bin/jupyter-lab; do
+      if [ -x "$path" ] && [ ! -e /home/coder/.local/bin/jupyter-lab ]; then
+        sudo ln -sf "$path" /home/coder/.local/bin/jupyter-lab || true
+      fi
+    done
 
     # Inicializar /etc/skel la primera vez
     if [ ! -f ~/.init_done ]; then
