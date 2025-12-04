@@ -1,7 +1,7 @@
 ---
 display_name: MakeSpace Dev Workspace
 description: Entorno de desarrollo completo basado en Docker
-icon: ../../../site/static/icon/docker.png
+icon: ../../assets/icons/dev.svg
 maintainer_github: makespacemadrid
 tags: [docker, workspace, makespace]
 ---

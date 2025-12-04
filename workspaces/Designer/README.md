@@ -1,7 +1,7 @@
 ---
 display_name: MakeSpace Designer
 description: Entorno gráfico para diseño 2D/3D y electrónica
-icon: ../../../site/static/icon/docker.png
+icon: ../../assets/icons/design.svg
 maintainer_github: makespacemadrid
 tags: [design, cad, 3d, electronics, makespace]
 ---
