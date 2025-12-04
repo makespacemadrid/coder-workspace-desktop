@@ -344,14 +344,6 @@ resource "docker_container" "workspace" {
     "NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,video"
   ]
 
-  # GPUs opcionales
-  dynamic "gpus" {
-    for_each = local.enable_gpu ? [1] : []
-    content {
-      all = true
-    }
-  }
-
   # Solo mapea puertos si expose_ports = true
   dynamic "ports" {
     for_each = local.port_range

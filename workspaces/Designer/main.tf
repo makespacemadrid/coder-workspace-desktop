@@ -173,13 +173,6 @@ resource "docker_container" "workspace" {
     "NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,video"
   ]
 
-  dynamic "gpus" {
-    for_each = local.enable_gpu ? [1] : []
-    content {
-      all = true
-    }
-  }
-
   shm_size = 2 * 1024 * 1024 * 1024
 
   volumes {

@@ -300,8 +300,6 @@ resource "docker_container" "workspace" {
     container_path = "/var/run/docker.sock"
   }
 
-  gpus = "all"
-
   host {
     host = "host.docker.internal"
     ip   = "host-gateway"
