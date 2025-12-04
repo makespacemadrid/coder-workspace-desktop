@@ -55,6 +55,24 @@ data "coder_parameter" "enable_gpu" {
   mutable      = true
 }
 
+data "coder_parameter" "opencode_provider_url" {
+  name         = "opencode_provider_url"
+  display_name = "OpenCode provider URL (opcional)"
+  description  = "Base URL compatible con OpenAI (ej. https://api.tu-proveedor.com/v1). Dejar vacío para omitir config."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "opencode_api_key" {
+  name         = "opencode_api_key"
+  display_name = "OpenCode API key (opcional)"
+  description  = "API key para el proveedor OpenAI compatible. Dejar vacío para omitir config."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
 locals {
   username        = data.coder_workspace_owner.me.name
   workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
@@ -103,6 +121,27 @@ resource "coder_agent" "main" {
       touch ~/.init_done
     fi
 
+    # Config inicial de OpenCode (opcional)
+    if [ -n "${OPENCODE_PROVIDER_URL:-}" ] && [ -n "${OPENCODE_API_KEY:-}" ]; then
+      mkdir -p /home/coder/.opencode
+      cat > /home/coder/.opencode/config.json <<'JSONCFG'
+{
+  "providers": [
+    {
+      "name": "custom",
+      "type": "openai",
+      "base_url": "OPENCODE_PROVIDER_URL_VALUE",
+      "api_key": "OPENCODE_API_KEY_VALUE"
+    }
+  ],
+  "default_provider": "custom"
+}
+JSONCFG
+      sed -i "s|OPENCODE_PROVIDER_URL_VALUE|${OPENCODE_PROVIDER_URL}|g" /home/coder/.opencode/config.json
+      sed -i "s|OPENCODE_API_KEY_VALUE|${OPENCODE_API_KEY}|g" /home/coder/.opencode/config.json
+      chown -R "$USER:$USER" /home/coder/.opencode || true
+    fi
+
     # --------------------------------------------------------------------------------
     # UV: instalador universal para CLIs Python (opcional)
     # --------------------------------------------------------------------------------
@@ -143,6 +182,8 @@ resource "coder_agent" "main" {
     GIT_COMMITTER_NAME  = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
     GIT_COMMITTER_EMAIL = data.coder_workspace_owner.me.email
     HOME                = "/home/coder"
+    OPENCODE_PROVIDER_URL = data.coder_parameter.opencode_provider_url.value
+    OPENCODE_API_KEY      = data.coder_parameter.opencode_api_key.value
   }
 
   metadata {
