@@ -211,7 +211,7 @@ module "kasmvnc" {
   source              = "registry.coder.com/coder/kasmvnc/coder"
   version             = "1.2.6"
   agent_id            = coder_agent.main.id
-  desktop_environment = "mate"
+  desktop_environment = "xfce"
   subdomain           = true
 }
 

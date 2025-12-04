@@ -44,6 +44,9 @@ RUN dpkg --add-architecture i386 && \
         caja \
     && rm -rf /var/lib/apt/lists/*
 
+# Wrapper para KasmVNC: si se pide "xfce", arrancar MATE
+RUN printf '#!/bin/sh\nexec mate-session\n' > /usr/local/bin/startxfce4 && chmod +x /usr/local/bin/startxfce4
+
 # Locales por defecto
 RUN locale-gen es_ES.UTF-8 en_US.UTF-8 && \
     update-locale LANG=es_ES.UTF-8
