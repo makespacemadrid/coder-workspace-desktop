@@ -79,7 +79,7 @@ resource "coder_agent" "main" {
     fi
 
     # Config inicial de OpenCode (opcional)
-    if [ -n "${OPENCODE_PROVIDER_URL:-}" ] && [ -n "${OPENCODE_API_KEY:-}" ]; then
+    if [ -n "$${OPENCODE_PROVIDER_URL:-}" ] && [ -n "$${OPENCODE_API_KEY:-}" ]; then
       mkdir -p /home/coder/.opencode
       cat > /home/coder/.opencode/config.json <<'JSONCFG'
 {
@@ -94,8 +94,8 @@ resource "coder_agent" "main" {
   "default_provider": "custom"
 }
 JSONCFG
-      sed -i "s|OPENCODE_PROVIDER_URL_VALUE|${OPENCODE_PROVIDER_URL}|g" /home/coder/.opencode/config.json
-      sed -i "s|OPENCODE_API_KEY_VALUE|${OPENCODE_API_KEY}|g" /home/coder/.opencode/config.json
+      sed -i "s|OPENCODE_PROVIDER_URL_VALUE|$${OPENCODE_PROVIDER_URL}|g" /home/coder/.opencode/config.json
+      sed -i "s|OPENCODE_API_KEY_VALUE|$${OPENCODE_API_KEY}|g" /home/coder/.opencode/config.json
       chown -R "$USER:$USER" /home/coder/.opencode || true
     fi
 
