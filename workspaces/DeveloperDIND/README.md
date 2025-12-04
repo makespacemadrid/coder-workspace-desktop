@@ -11,12 +11,11 @@ tags: [docker, dind, gpu, workspace, makespace]
 Template pensado para desarrollar con **Docker in Docker (DinD)** sin tocar el Docker del host. Usa la misma imagen `ghcr.io/makespacemadrid/coder-mks-developer:latest`, escritorio XFCE/KasmVNC y herramientas dev + IA.
 
 ## Qué incluye
-- Docker Engine y docker-compose-plugin dentro del contenedor (modo DinD).
-- Navegador Firefox (.deb), code-server, Cursor, JupyterLab, Tmux, Filebrowser.
+- Docker Engine y docker-compose-plugin dentro del contenedor (DinD, no usa el socket del host).
+- Escritorio XFCE/KasmVNC, code-server, Cursor, JupyterLab, Tmux, Filebrowser.
 - Node.js 20 y CLIs de IA (OpenAI/Codex, Claude, Gemini).
-- Volumen persistente para `/home/coder` y para `/var/lib/docker` (tus contenedores DinD sobreviven reinicios).
-- Exposición opcional de puertos al host.
-- GPUs opcionales (checkbox al crear el workspace).
+- Volúmenes persistentes: `/home/coder` y `/var/lib/docker` (contenerización DinD persistente).
+- Puertos al host opcionales; GPUs opcionales (si el nodo tiene GPU).
 
 ## Parámetros en Coder
 - `Expose ports`: habilita o no el mapeo de puertos al host.

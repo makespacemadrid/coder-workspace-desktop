@@ -11,15 +11,15 @@ tags: [design, cad, 3d, electronics, makespace]
 Template con escritorio XFCE/KasmVNC y herramientas de diseño 2D/3D + electrónica usando la imagen `ghcr.io/makespacemadrid/coder-mks-design:latest`.
 
 ## Apps incluidas (imagen base)
-- Inkscape, GIMP, Krita (2D)
-- Blender, FreeCAD, OpenSCAD, MeshLab, LibreCAD (3D/CAD)
-- PrusaSlicer y OrcaSlicer (impresión 3D)
-- KiCad (EDA, con footprints/símbolos/templates), Fritzing, SimulIDE
-- LaserGRBL (vía Wine)
+- 2D: Inkscape, GIMP, Krita
+- 3D/CAD: Blender, FreeCAD, OpenSCAD, MeshLab, LibreCAD
+- Impresión 3D: PrusaSlicer, OrcaSlicer (AppImage)
+- Electrónica/EDA: KiCad (footprints/símbolos/templates), Fritzing, SimulIDE
+- Láser/CNC: LaserGRBL (via Wine)
 - Firefox (.deb, sin snap)
 
 ## Parámetros
-- `Habilitar GPUs`: expone `--gpus all` si el host tiene GPU configurada (por defecto ON).
+- `Habilitar GPUs`: expone GPU si el host la tiene (por defecto ON).
 
 ## Notas
 - Home persistente en volumen Docker (`/home/coder`).
