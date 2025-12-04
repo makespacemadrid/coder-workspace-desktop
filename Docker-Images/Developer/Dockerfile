@@ -88,6 +88,16 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     npm cache clean --force && \
     rm -rf /var/lib/apt/lists/*
 
+# Visual Studio Code (repositorio oficial Microsoft)
+RUN install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg && \
+    chmod a+r /etc/apt/keyrings/microsoft.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
+      | tee /etc/apt/sources.list.d/vscode.list > /dev/null && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends code && \
+    rm -rf /var/lib/apt/lists/*
+
 ENV PIPX_HOME=/opt/pipx \
     PIPX_BIN_DIR=/usr/local/bin \
     PATH="/usr/local/bin:${PATH}"
