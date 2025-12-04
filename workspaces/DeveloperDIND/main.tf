@@ -219,13 +219,6 @@ module "code-server" {
   order    = 1
 }
 
-module "vscode" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/vscode-desktop/coder"
-  version  = "1.2.0"
-  agent_id = coder_agent.main.id
-}
-
 module "git-config" {
   count    = data.coder_workspace.me.start_count
   source   = "registry.coder.com/coder/git-config/coder"
