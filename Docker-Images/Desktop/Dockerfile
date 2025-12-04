@@ -42,6 +42,9 @@ RUN dpkg --add-architecture i386 && \
         mate-control-center \
         mate-terminal \
         caja \
+        # escritorio XFCE para compatibilidad (kasmvnc)
+        xfce4 \
+        xfce4-goodies \
     && rm -rf /var/lib/apt/lists/*
 
 # Wrapper para KasmVNC: si se pide "xfce", arrancar MATE
