@@ -123,22 +123,25 @@ RUN curl -fsSL "${GITHUB_DESKTOP_DEB_URL}" -o /tmp/github-desktop.deb && \
 # (no hay user namespaces). Los wrappers añaden --no-sandbox y pistas de Ozone.
 ENV ELECTRON_DISABLE_SANDBOX=1 \
     ELECTRON_OZONE_PLATFORM_HINT=auto
-RUN set -e; \
-    wrap() { \
-      local name="$1"; local target="$2"; \
-      if [ -x "$target" ]; then \
-        mv "$name" "${name}.real" || true; \
-        cat > "$name" <<'SHWRAP' && chmod +x "$name"; \
+RUN <<'EOSH'
+set -e
+wrap() {
+  local name="$1"; local target="$2"
+  if [ -x "$target" ]; then
+    mv "$name" "${name}.real" || true
+    cat > "$name" <<'SHWRAP'
 #!/bin/sh
 exec env ELECTRON_DISABLE_SANDBOX=1 ELECTRON_OZONE_PLATFORM_HINT="${ELECTRON_OZONE_PLATFORM_HINT:-auto}" \
   "$TARGET_BIN" --no-sandbox "$@"
 SHWRAP
-        sed -i "s|$TARGET_BIN|$target|g" "$name"; \
-      fi; \
-    }; \
-    TARGET_BIN=/usr/lib/github-desktop/github-desktop wrap /usr/bin/github-desktop /usr/lib/github-desktop/github-desktop; \
-    TARGET_BIN=/usr/share/claude-desktop/claude-desktop wrap /usr/bin/claude-desktop /usr/share/claude-desktop/claude-desktop; \
-    TARGET_BIN=/usr/share/code/bin/code wrap /usr/bin/code /usr/share/code/bin/code
+    chmod +x "$name"
+    sed -i "s|$TARGET_BIN|$target|g" "$name"
+  fi
+}
+TARGET_BIN=/usr/lib/github-desktop/github-desktop wrap /usr/bin/github-desktop /usr/lib/github-desktop/github-desktop
+TARGET_BIN=/usr/share/claude-desktop/claude-desktop wrap /usr/bin/claude-desktop /usr/share/claude-desktop/claude-desktop
+TARGET_BIN=/usr/share/code/bin/code wrap /usr/bin/code /usr/share/code/bin/code
+EOSH
 
 # Accesos directos en el escritorio por defecto
 RUN set -e; \
