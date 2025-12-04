@@ -54,3 +54,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.image_name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image_name }}
+          build-args: |
+            BUILDKIT_STEP_TIMEOUT=1800
+          sbom: false

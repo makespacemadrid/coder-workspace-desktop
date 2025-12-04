@@ -46,8 +46,6 @@ RUN dpkg --add-architecture i386 && \
         inkscape \
         gimp \
         krita \
-        blender \
-        freecad \
         openscad \
         prusa-slicer \
         librecad \
