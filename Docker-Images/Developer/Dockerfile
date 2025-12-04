@@ -98,6 +98,17 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     apt-get install -y --no-install-recommends code && \
     rm -rf /var/lib/apt/lists/*
 
+# GitHub Desktop (shiftkey build) y Claude Desktop (unofficial build)
+ARG GITHUB_DESKTOP_VERSION=3.4.13-linux1
+ARG GITHUB_DESKTOP_DEB_URL=https://github.com/shiftkey/desktop/releases/download/release-${GITHUB_DESKTOP_VERSION}/GitHubDesktop-linux-amd64-${GITHUB_DESKTOP_VERSION}.deb
+ARG CLAUDE_DESKTOP_VERSION=0.14.10
+ARG CLAUDE_DESKTOP_DEB_URL=https://github.com/aaddrick/claude-desktop-debian/releases/download/v1.1.10%2Bclaude${CLAUDE_DESKTOP_VERSION}/claude-desktop_${CLAUDE_DESKTOP_VERSION}_amd64.deb
+RUN curl -fsSL "${GITHUB_DESKTOP_DEB_URL}" -o /tmp/github-desktop.deb && \
+    curl -fsSL "${CLAUDE_DESKTOP_DEB_URL}" -o /tmp/claude-desktop.deb && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends /tmp/github-desktop.deb /tmp/claude-desktop.deb && \
+    rm -rf /var/lib/apt/lists/* /tmp/github-desktop.deb /tmp/claude-desktop.deb
+
 ENV PIPX_HOME=/opt/pipx \
     PIPX_BIN_DIR=/usr/local/bin \
     PATH="/usr/local/bin:${PATH}"

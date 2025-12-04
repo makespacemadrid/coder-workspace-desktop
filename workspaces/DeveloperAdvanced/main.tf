@@ -15,41 +15,9 @@ variable "docker_socket" {
   type        = string
 }
 
-# ================================
-#   Parameters visibles en Coder
-# ================================
-
-data "coder_parameter" "expose_ports" {
-  name         = "expose_ports"
-  display_name = "Expose ports to host"
-  description  = "Activa o desactiva el mapeo de puertos hacia el host"
-  type         = "bool"
-  default      = false
-  mutable      = true
-}
-
-data "coder_parameter" "port_range_start" {
-  name         = "port_range_start"
-  display_name = "Port range start"
-  description  = "Puerto inicial del rango a exponer en el host"
-  type         = "number"
-  default      = 15000
-  mutable      = true
-}
-
-data "coder_parameter" "port_range_end" {
-  name         = "port_range_end"
-  display_name = "Port range end"
-  description  = "Puerto final del rango a exponer en el host (incluido)"
-  type         = "number"
-  default      = 15050
-  mutable      = true
-}
-
 locals {
   username        = data.coder_workspace_owner.me.name
   workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
-  port_range      = data.coder_parameter.expose_ports.value ? range(data.coder_parameter.port_range_start.value, data.coder_parameter.port_range_end.value + 1) : []
 }
 
 provider "docker" {
@@ -299,6 +267,8 @@ resource "docker_container" "workspace" {
   hostname = data.coder_workspace.me.name
 
   user = "coder"
+  # Acceso directo a la red del host (sin mapeo de puertos)
+  network_mode = "host"
 
   entrypoint = [
     "sh",
@@ -321,23 +291,8 @@ resource "docker_container" "workspace" {
     container_path = "/var/run/docker.sock"
   }
 
-  host {
-    host = "host.docker.internal"
-    ip   = "host-gateway"
-  }
-
   # Para mejorar KasmVNC y navegadores
   shm_size = 2 * 1024 * 1024 * 1024
-
-  # Solo mapea puertos si expose_ports = true
-  dynamic "ports" {
-    for_each = local.port_range
-    content {
-      internal = ports.value
-      external = ports.value
-      ip       = "0.0.0.0"
-    }
-  }
 
   volumes {
     container_path = "/home/coder"

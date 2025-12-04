@@ -7,7 +7,7 @@
 - `ghcr.io/makespacemadrid/coder-mks-design:latest` (build desde `Docker-Images/Designer/Dockerfile`). Enfoque en diseño 2D/3D y electrónica: Inkscape, GIMP, Krita, Blender, FreeCAD, OpenSCAD, PrusaSlicer, OrcaSlicer, MeshLab, LibreCAD, KiCad, Fritzing, SimulIDE, LaserGRBL (Wine).
 
 ## Templates
-- `DeveloperAdvanced`: acceso directo al Docker del host (monta `/var/run/docker.sock`), GPUs habilitadas por defecto, puertos opcionales, home persistente.
+- `DeveloperAdvanced`: acceso directo al Docker del host (monta `/var/run/docker.sock`), GPUs habilitadas por defecto, red en modo host, home persistente.
 - `DeveloperDIND`: Docker-in-Docker con daemon propio y volumen persistente para `/var/lib/docker`; GPUs opcionales al crear el workspace; misma imagen base que `DeveloperAdvanced`.
 - `Designer`: escritorio XFCE/KasmVNC con herramientas de diseño; GPUs opcionales; home persistente.
 
