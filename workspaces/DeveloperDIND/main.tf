@@ -249,7 +249,7 @@ module "kasmvnc" {
 }
 
 module "github-upload-public-key" {
-  count    = 0 # Deshabilitado: requiere external-auth configurado en Coder y rompe el arranque si falta
+  count    = data.coder_workspace.me.start_count
   source   = "registry.coder.com/coder/github-upload-public-key/coder"
   version  = "1.0.32"
   agent_id = coder_agent.main.id
