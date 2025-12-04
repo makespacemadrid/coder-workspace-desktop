@@ -130,6 +130,15 @@ SHWRAP
     TARGET_BIN=/usr/share/claude-desktop/claude-desktop wrap /usr/bin/claude-desktop /usr/share/claude-desktop/claude-desktop; \
     TARGET_BIN=/usr/share/code/bin/code wrap /usr/bin/code /usr/share/code/bin/code
 
+# Accesos directos en el escritorio por defecto
+RUN set -e; \
+    mkdir -p /etc/skel/Desktop && \
+    for f in code.desktop github-desktop.desktop claude-desktop.desktop firefox.desktop; do \
+      src="/usr/share/applications/$f"; \
+      if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
+    done; \
+    chmod +x /etc/skel/Desktop/*.desktop || true
+
 ENV PIPX_HOME=/opt/pipx \
     PIPX_BIN_DIR=/usr/local/bin \
     PATH="/usr/local/bin:${PATH}"
