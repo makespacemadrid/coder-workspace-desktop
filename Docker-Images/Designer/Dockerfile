@@ -38,14 +38,18 @@ RUN dpkg --add-architecture i386 && \
         zip unzip p7zip-full \
         # navegador para KasmVNC
         firefox \
-        # escritorio KDE Plasma
-        plasma-desktop \
+        # escritorio KDE Plasma (sesión completa con gestor de ventanas)
+        kde-plasma-desktop \
+        kwin-x11 \
+        plasma-workspace \
         konsole \
         dolphin \
         # Herramientas de diseño 2D/3D y electrónica
         inkscape \
         gimp \
         krita \
+        freecad \
+        freecad-common \
         openscad \
         prusa-slicer \
         librecad \

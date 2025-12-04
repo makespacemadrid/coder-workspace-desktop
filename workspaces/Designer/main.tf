@@ -49,6 +49,11 @@ resource "coder_agent" "main" {
     # Resolver coder.mksmad.org desde dentro del workspace
     echo "10.0.0.184 coder.mksmad.org" | sudo tee --append /etc/hosts
 
+    # KasmVNC busca startkde; en Plasma moderno es startplasma-x11
+    if [ -x /usr/bin/startplasma-x11 ] && [ ! -x /usr/bin/startkde ]; then
+      sudo ln -sf /usr/bin/startplasma-x11 /usr/bin/startkde
+    fi
+
     # Inicializar /etc/skel la primera vez
     if [ ! -f ~/.init_done ]; then
       cp -rT /etc/skel ~ || true
@@ -94,7 +99,7 @@ module "kasmvnc" {
   source              = "registry.coder.com/coder/kasmvnc/coder"
   version             = "1.2.6"
   agent_id            = coder_agent.main.id
-  desktop_environment = "xfce"
+  desktop_environment = "kde"
   subdomain           = true
 }
 
