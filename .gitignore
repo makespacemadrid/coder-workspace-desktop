@@ -28,3 +28,6 @@ __pycache__/
 *.log
 *.tmp
 tmp/
+
+# Local agent notes
+AGENTS.local
