@@ -88,7 +88,7 @@ resource "coder_agent" "main" {
   }
 }
 
-# Módulos: solo acceso gráfico (KasmVNC) y login
+# Módulos
 module "kasmvnc" {
   count               = data.coder_workspace.me.start_count
   source              = "registry.coder.com/coder/kasmvnc/coder"
@@ -102,6 +102,30 @@ module "coder-login" {
   count    = data.coder_workspace.me.start_count
   source   = "registry.coder.com/coder/coder-login/coder"
   version  = "1.1.1"
+  agent_id = coder_agent.main.id
+}
+
+module "rdp_desktop" {
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/local-windows-rdp/coder"
+  version    = "1.0.3"
+  agent_id   = coder_agent.main.id
+  agent_name = "main"
+}
+
+module "filebrowser" {
+  count    = data.coder_workspace.me.start_count
+  source   = "registry.coder.com/coder/filebrowser/coder"
+  version  = "1.1.3"
+  agent_id = coder_agent.main.id
+  folder   = "/home/coder/project"
+}
+
+# AWS example. See below for examples of using this module with other providers
+module "windows_rdp" {
+  count    = data.coder_workspace.me.start_count
+  source   = "registry.coder.com/coder/windows-rdp/coder"
+  version  = "1.3.0"
   agent_id = coder_agent.main.id
 }
 
