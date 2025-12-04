@@ -80,6 +80,15 @@ resource "coder_agent" "main" {
     # Resolver coder.mksmad.org desde dentro del workspace
     echo "10.0.0.184 coder.mksmad.org" | sudo tee --append /etc/hosts
 
+    # Asegurar /home/coder como HOME efectivo incluso si se ejecuta como root
+    sudo mkdir -p /home/coder
+    sudo chown "$USER:$USER" /home/coder || true
+
+    # Symlink de opencode cuando se instale bajo /root (start script espera /home/coder/.opencode)
+    if [ -d /root/.opencode ] && [ ! -e /home/coder/.opencode ]; then
+      sudo ln -s /root/.opencode /home/coder/.opencode || true
+    fi
+
     # Inicializar /etc/skel la primera vez
     if [ ! -f ~/.init_done ]; then
       cp -rT /etc/skel ~ || true
@@ -125,6 +134,7 @@ resource "coder_agent" "main" {
     GIT_AUTHOR_EMAIL    = data.coder_workspace_owner.me.email
     GIT_COMMITTER_NAME  = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
     GIT_COMMITTER_EMAIL = data.coder_workspace_owner.me.email
+    HOME                = "/home/coder"
   }
 
   metadata {
