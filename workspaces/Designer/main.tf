@@ -153,6 +153,8 @@ resource "docker_container" "workspace" {
   name     = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}"
   hostname = data.coder_workspace.me.name
 
+  user = "coder"
+
   entrypoint = [
     "sh",
     "-c",
