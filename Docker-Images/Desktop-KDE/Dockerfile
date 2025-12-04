@@ -1,16 +1,16 @@
-# Base desktop image with MATE for Coder workspaces
+# Base desktop image with KDE Plasma for Coder workspaces
 FROM codercom/enterprise-base:ubuntu
 
-LABEL org.opencontainers.image.title="coder-mks-desktop" \
-      org.opencontainers.image.description="Base desktop image (MATE) for Coder workspaces" \
+LABEL org.opencontainers.image.title="coder-mks-desktop-kde" \
+      org.opencontainers.image.description="Base desktop image (KDE Plasma) for Coder workspaces" \
       org.opencontainers.image.source="https://github.com/makespacemadrid/coder-workspace-desktop" \
-      org.opencontainers.image.url="ghcr.io/makespacemadrid/coder-mks-desktop:latest"
+      org.opencontainers.image.url="ghcr.io/makespacemadrid/coder-mks-desktop-kde:latest"
 
 USER root
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Core deps + MATE desktop + Firefox (mozillateam)
+# Core deps + KDE Plasma desktop + Firefox (mozillateam)
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
@@ -34,14 +34,12 @@ RUN dpkg --add-architecture i386 && \
         mesa-utils \
         # navegador
         firefox \
-        # escritorio MATE (sesión X11)
-        mate-desktop-environment-core \
-        mate-session-manager \
-        marco \
-        mate-panel \
-        mate-control-center \
-        mate-terminal \
-        caja \
+        # escritorio KDE Plasma (sesión X11)
+        kde-plasma-desktop \
+        kwin-x11 \
+        plasma-workspace \
+        konsole \
+        dolphin \
     && rm -rf /var/lib/apt/lists/*
 
 # Locales por defecto
