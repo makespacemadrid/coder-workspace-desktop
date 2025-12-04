@@ -1,5 +1,5 @@
-# Imagen base para diseño 2D/3D y electrónica (MakeSpace) con KDE Plasma
-FROM codercom/enterprise-base:ubuntu
+# Imagen base para diseño 2D/3D y electrónica (MakeSpace) basada en coder-mks-desktop
+FROM ghcr.io/makespacemadrid/coder-mks-desktop:latest
 
 LABEL org.opencontainers.image.title="coder-mks-design" \
       org.opencontainers.image.description="Entorno de escritorio para diseño 2D/3D y electrónica (FreeCAD, Inkscape, GIMP, KiCad, Blender, PrusaSlicer, OpenSCAD)" \
@@ -10,7 +10,7 @@ USER root
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Paquetes base, escritorio y apps de diseño
+# Paquetes adicionales de diseño (la base ya incluye KDE + Firefox)
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
@@ -20,33 +20,10 @@ RUN dpkg --add-architecture i386 && \
     printf 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' > /etc/apt/preferences.d/mozillateam-firefox && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl wget \
-        git \
-        sudo \
-        locales tzdata \
-        # deps X11 / audio / GL
-        dbus-x11 \
-        xauth \
-        x11-xserver-utils \
-        libasound2t64 \
-        libgl1 \
-        libgl1-mesa-dri \
-        mesa-utils \
-        # utilidades básicas
         build-essential \
         pkg-config \
         python3 python3-venv python3-pip pipx \
         zip unzip p7zip-full \
-        # navegador para KasmVNC
-        firefox \
-        # escritorio KDE Plasma (sesión completa con gestor de ventanas)
-        kde-plasma-desktop \
-        kwin-x11 \
-        plasma-workspace \
-        konsole \
-        dolphin \
-        # Herramientas de diseño 2D/3D y electrónica
         inkscape \
         gimp \
         krita \

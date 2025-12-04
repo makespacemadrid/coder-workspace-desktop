@@ -1,5 +1,5 @@
-# Imagen base oficial de Coder sin escritorio (añadimos KDE Plasma)
-FROM codercom/enterprise-base:ubuntu
+# Imagen base con escritorio KDE
+FROM ghcr.io/makespacemadrid/coder-mks-desktop:latest
 
 LABEL org.opencontainers.image.title="coder-mks-developer" \
       org.opencontainers.image.description="Coder Desktop extendido con utilidades dev, Docker, IA CLI y tooling de consola" \
@@ -10,31 +10,8 @@ USER root
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Paquetes comunes + KDE + dependencias de KasmVNC y servicios gráficos
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository -y ppa:mozillateam/ppa && \
-    printf 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' > /etc/apt/preferences.d/mozillateam-firefox && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl wget \
-        git \
-        sudo \
-        locales tzdata \
-        # deps X11 / audio / GL
-        dbus-x11 \
-        xauth \
-        x11-xserver-utils \
-        libasound2t64 \
-        libgl1 \
-        libgl1-mesa-dri \
-        mesa-utils \
-        # KDE Plasma (sesión X11) + utilidades básicas
-        plasma-desktop \
-        konsole \
-        dolphin && \
+# Paquetes adicionales de desarrollo sobre la base desktop
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         # herramientas de desarrollo genéricas
         build-essential \
