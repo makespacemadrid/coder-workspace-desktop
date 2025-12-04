@@ -1,5 +1,5 @@
-# Imagen base para diseño 2D/3D y electrónica (MakeSpace) basada en coder-mks-desktop
-FROM ghcr.io/makespacemadrid/coder-mks-desktop:latest
+# Imagen base para diseño 2D/3D y electrónica (MakeSpace) basada en coder-mks-desktop-kde
+FROM ghcr.io/makespacemadrid/coder-mks-desktop-kde:latest
 
 LABEL org.opencontainers.image.title="coder-mks-design" \
       org.opencontainers.image.description="Entorno de escritorio para diseño 2D/3D y electrónica (FreeCAD, Inkscape, GIMP, KiCad, Blender, PrusaSlicer, OpenSCAD)" \

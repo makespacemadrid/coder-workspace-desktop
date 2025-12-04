@@ -59,6 +59,11 @@ resource "coder_agent" "main" {
       cp -rT /etc/skel ~ || true
       touch ~/.init_done
     fi
+
+    # Wrapper para compatibilidad con módulos que piden startxfce4
+    echo '#!/bin/sh\nexec startplasma-x11' | sudo tee /usr/local/bin/startxfce4 >/dev/null
+    sudo chmod +x /usr/local/bin/startxfce4
+    sudo ln -sf /usr/local/bin/startxfce4 /usr/bin/startxfce4
   EOT
 
   env = {

@@ -70,6 +70,11 @@ resource "coder_agent" "main" {
     # Resolver coder.mksmad.org desde dentro del workspace
     echo "10.0.0.184 coder.mksmad.org" | sudo tee --append /etc/hosts
 
+    # Wrapper: si KasmVNC pide xfce, arrancar MATE
+    echo '#!/bin/sh\nexec mate-session' | sudo tee /usr/local/bin/startxfce4 >/dev/null
+    sudo chmod +x /usr/local/bin/startxfce4
+    sudo ln -sf /usr/local/bin/startxfce4 /usr/bin/startxfce4
+
     # Asegurar /home/coder como HOME efectivo incluso si se ejecuta como root
     sudo mkdir -p /home/coder
     sudo chown "$USER:$USER" /home/coder || true
