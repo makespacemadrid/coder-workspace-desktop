@@ -116,7 +116,7 @@ RUN set -e; \
 # Desactivar bloqueo/ahorro de pantalla (KDE) y dejar accesos directos en Desktop
 RUN printf '[Daemon]\nTimeout=0\nLockOnResume=false\nLockOnSuspend=false\nAutolock=false\n' > /etc/xdg/kscreenlockerrc && \
     mkdir -p /etc/skel/Desktop && \
-    for f in firefox.desktop blender.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop geany.desktop visicut.desktop appimagepool.desktop; do \
+    for f in firefox.desktop org.freecadweb.FreeCAD.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop fritzing.desktop simulide.desktop geany.desktop visicut.desktop appimagepool.desktop; do \
       src="/usr/share/applications/$f"; \
       if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
     done && \
