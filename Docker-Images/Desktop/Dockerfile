@@ -32,6 +32,8 @@ RUN dpkg --add-architecture i386 && \
         libgl1 \
         libgl1-mesa-dri \
         mesa-utils \
+        fuse3 \
+        libfuse2 \
         # navegador
         firefox \
         # escritorio MATE (sesión X11)
@@ -46,6 +48,9 @@ RUN dpkg --add-architecture i386 && \
         xfce4 \
         xfce4-goodies \
     && rm -rf /var/lib/apt/lists/*
+
+# Configuración FUSE para permitir AppImages (allow_other)
+RUN echo "user_allow_other" > /etc/fuse.conf
 
 # Wrapper para KasmVNC: si se pide "xfce", arrancar MATE
 RUN printf '#!/bin/sh\nexec mate-session\n' > /usr/local/bin/startxfce4 && chmod +x /usr/local/bin/startxfce4

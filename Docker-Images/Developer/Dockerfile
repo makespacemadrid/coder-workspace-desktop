@@ -32,6 +32,8 @@ RUN apt-get update && \
         cifs-utils \
         nfs-common \
         sshfs \
+        fuse3 \
+        libfuse2 \
         geany \
         desktop-file-utils \
         dnsutils \
@@ -46,6 +48,9 @@ RUN apt-get update && \
         direnv \
         zip unzip p7zip-full \
     && rm -rf /var/lib/apt/lists/*
+
+# Configuración FUSE para permitir AppImages (allow_other)
+RUN echo "user_allow_other" > /etc/fuse.conf
 
 # KasmVNC viene como módulo de Coder; solo dejamos KDE como session manager
 RUN update-alternatives --set x-session-manager /usr/bin/startplasma-x11 || true

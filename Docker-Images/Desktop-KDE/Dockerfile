@@ -32,6 +32,8 @@ RUN dpkg --add-architecture i386 && \
         libgl1 \
         libgl1-mesa-dri \
         mesa-utils \
+        fuse3 \
+        libfuse2 \
         # navegador
         firefox \
         # escritorio KDE Plasma (sesión X11)
@@ -41,6 +43,9 @@ RUN dpkg --add-architecture i386 && \
         konsole \
         dolphin \
     && rm -rf /var/lib/apt/lists/*
+
+# Configuración FUSE para permitir AppImages (allow_other)
+RUN echo "user_allow_other" > /etc/fuse.conf
 
 # Locales por defecto
 RUN locale-gen es_ES.UTF-8 en_US.UTF-8 && \
