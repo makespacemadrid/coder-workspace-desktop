@@ -72,14 +72,6 @@ resource "coder_agent" "main" {
   startup_script = <<-EOT
     set -e
 
-    # Audio: preparar runtime y arrancar PulseAudio si no está activo
-    export XDG_RUNTIME_DIR="$${XDG_RUNTIME_DIR:-/tmp/runtime-$USER}"
-    mkdir -p "$XDG_RUNTIME_DIR"
-    chmod 700 "$XDG_RUNTIME_DIR"
-    if ! pgrep -x pulseaudio >/dev/null 2>&1; then
-      pulseaudio --start --exit-idle-time=-1 || true
-    fi
-
     # Asegurar permisos de FUSE
     sudo usermod -aG fuse "$USER" || true
     if [ -e /dev/fuse ]; then

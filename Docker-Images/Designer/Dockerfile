@@ -55,9 +55,6 @@ RUN dpkg --add-architecture i386 && \
         wine32 \
         winbind \
         geany \
-        pulseaudio \
-        pulseaudio-utils \
-        alsa-utils \
         desktop-file-utils \
     && rm -rf /var/lib/apt/lists/*
 
