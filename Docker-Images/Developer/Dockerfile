@@ -129,13 +129,12 @@ wrap() {
   local name="$1"; local target="$2"
   if [ -x "$target" ]; then
     mv "$name" "${name}.real" || true
-    cat > "$name" <<'SHWRAP'
+    cat > "$name" <<SHWRAP
 #!/bin/sh
 exec env ELECTRON_DISABLE_SANDBOX=1 ELECTRON_OZONE_PLATFORM_HINT="${ELECTRON_OZONE_PLATFORM_HINT:-auto}" \
-  "$TARGET_BIN" --no-sandbox "$@"
+  "$target" --no-sandbox "$@"
 SHWRAP
     chmod +x "$name"
-    sed -i "s|$TARGET_BIN|$target|g" "$name"
   fi
 }
 TARGET_BIN=/usr/lib/github-desktop/github-desktop wrap /usr/bin/github-desktop /usr/lib/github-desktop/github-desktop
