@@ -15,12 +15,6 @@ variable "docker_socket" {
   type        = string
 }
 
-variable "host_override" {
-  default     = ""
-  description = "(Optional) Host/IP override en formato \"hostname ip\" (ej. \"coder.mksmad.org 10.0.0.184\")"
-  type        = string
-}
-
 # Parámetro para GPUs opcionales
 data "coder_parameter" "enable_gpu" {
   name         = "enable_gpu"
@@ -53,8 +47,6 @@ locals {
   username        = data.coder_workspace_owner.me.name
   workspace_image = "ghcr.io/makespacemadrid/coder-mks-design:latest"
   enable_gpu      = data.coder_parameter.enable_gpu.value
-  host_override_parts = [for p in split(" ", var.host_override) : p if p != ""]
-  host_override_set   = length(local.host_override_parts) == 2
 }
 
 provider "docker" {
@@ -260,14 +252,6 @@ resource "docker_container" "workspace" {
   host {
     host = "host.docker.internal"
     ip   = "host-gateway"
-  }
-
-  dynamic "host" {
-    for_each = local.host_override_set ? [local.host_override_parts] : []
-    content {
-      host = host.value[0]
-      ip   = host.value[1]
-    }
   }
 
   labels {

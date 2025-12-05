@@ -12,8 +12,6 @@
 - `Designer`: escritorio KDE/KasmVNC con herramientas de diseño; GPUs opcionales; home persistente; AppImage Pool y módulos Filebrowser/OpenCode. KasmVNC para escritorio (RDP no aplica a esta imagen Linux).
 
 ## Notas operativas
-- Si el agent de Coder falla al descargar `coder-linux-amd64` por fallos de red/pfSense, hay un bootstrap con fallback local en `assets/agent/bootstrap_linux_local.sh`. Se puede inyectar en el contenedor de `coder server` (o en el provisioner) con `CODER_AGENT_SCRIPT_LINUX_AMD64="$(cat assets/agent/bootstrap_linux_local.sh)"` y opcionalmente `CODER_AGENT_FALLBACK_URL=http://10.0.0.184/bin/coder-linux-amd64` / `CODER_AGENT_FALLBACK_PATH=/var/lib/coder/agent/coder-linux-amd64` para usar un binario servido localmente o montado en disco.
-
 Todos los contenedores llevan labels `com.centurylinklabs.watchtower.*` para que Watchtower pueda actualizarlos si se despliega con `--label-enable` + `--scope coder-workspaces`.
 
 ## Publicación
