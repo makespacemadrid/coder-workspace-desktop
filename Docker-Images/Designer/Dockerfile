@@ -4,7 +4,10 @@ FROM ghcr.io/makespacemadrid/coder-mks-desktop-kde:latest
 LABEL org.opencontainers.image.title="coder-mks-design" \
       org.opencontainers.image.description="Entorno de escritorio para diseño 2D/3D y electrónica (FreeCAD, Inkscape, GIMP, KiCad, Blender, PrusaSlicer, OpenSCAD)" \
       org.opencontainers.image.source="https://github.com/makespacemadrid/coder-workspace-desktop" \
-      org.opencontainers.image.url="ghcr.io/makespacemadrid/coder-mks-design:latest"
+      org.opencontainers.image.url="ghcr.io/makespacemadrid/coder-mks-design:latest" \
+      com.centurylinklabs.watchtower.enable="true" \
+      com.centurylinklabs.watchtower.scope="coder-workspaces" \
+      com.centurylinklabs.watchtower.lifecycle="rolling"
 
 USER root
 
@@ -87,7 +90,7 @@ RUN set -e; \
 # Desactivar bloqueo/ahorro de pantalla (KDE) y dejar accesos directos en Desktop
 RUN printf '[Daemon]\nTimeout=0\nLockOnResume=false\nLockOnSuspend=false\nAutolock=false\n' > /etc/xdg/kscreenlockerrc && \
     mkdir -p /etc/skel/Desktop && \
-    for f in firefox.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop geany.desktop visicut.desktop; do \
+    for f in firefox.desktop blender.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop geany.desktop visicut.desktop appimagepool.desktop; do \
       src="/usr/share/applications/$f"; \
       if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
     done && \
@@ -100,6 +103,8 @@ RUN mkdir -p /opt/appimagepool && \
     curl -fsSL "${APPIMAGEPOOL_URL}" -o /opt/appimagepool/AppImagePool.AppImage && \
     chmod +x /opt/appimagepool/AppImagePool.AppImage && \
     ln -sf /opt/appimagepool/AppImagePool.AppImage /usr/local/bin/appimagepool && \
+    curl -fsSL "https://raw.githubusercontent.com/prateekmedia/appimagepool/master/data/icons/hicolor/scalable/apps/com.github.prateekmedia.appimagepool.svg" \
+      -o /usr/share/icons/hicolor/scalable/apps/appimagepool.svg && \
     cat > /usr/share/applications/appimagepool.desktop <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -108,3 +113,5 @@ Exec=appimagepool
 Icon=appimagepool
 Categories=Utility;
 EOF
+RUN update-desktop-database /usr/share/applications || true && \
+    gtk-update-icon-cache -q /usr/share/icons/hicolor || true

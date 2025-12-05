@@ -80,7 +80,7 @@ resource "coder_agent" "main" {
 
     # Refrescar accesos directos en el escritorio (si faltan)
     mkdir -p ~/Desktop
-    for f in firefox.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop visicut.desktop geany.desktop appimagepool.desktop; do
+    for f in firefox.desktop blender.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop visicut.desktop geany.desktop appimagepool.desktop orcaslicer.desktop simulide.desktop; do
       src="/usr/share/applications/$f"
       if [ -f "$src" ] && [ ! -e "$HOME/Desktop/$f" ]; then
         ln -sf "$src" "$HOME/Desktop/$f"
@@ -270,5 +270,13 @@ resource "docker_container" "workspace" {
   labels {
     label = "coder.workspace_name"
     value = data.coder_workspace.me.name
+  }
+  labels {
+    label = "com.centurylinklabs.watchtower.enable"
+    value = "true"
+  }
+  labels {
+    label = "com.centurylinklabs.watchtower.scope"
+    value = "coder-workspaces"
   }
 }

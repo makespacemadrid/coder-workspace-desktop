@@ -8,7 +8,7 @@ tags: [design, cad, 3d, electronics, makespace]
 
 # MakeSpace Designer
 
-Template con escritorio XFCE/KasmVNC y herramientas de diseño 2D/3D + electrónica usando la imagen `ghcr.io/makespacemadrid/coder-mks-design:latest`.
+Template con escritorio KDE/KasmVNC y herramientas de diseño 2D/3D + electrónica usando la imagen `ghcr.io/makespacemadrid/coder-mks-design:latest`.
 
 ## Apps incluidas (imagen base)
 - 2D: Inkscape, GIMP, Krita
@@ -16,15 +16,17 @@ Template con escritorio XFCE/KasmVNC y herramientas de diseño 2D/3D + electrón
 - Impresión 3D: PrusaSlicer, OrcaSlicer (AppImage)
 - Electrónica/EDA: KiCad (footprints/símbolos/templates), Fritzing, SimulIDE
 - Láser/CNC: LaserGRBL (via Wine)
-- Firefox (.deb, sin snap)
+- Navegación y utilidades: Firefox (.deb, sin snap), Geany, AppImage Pool (tienda/gestor de AppImage)
+- Módulos Coder: KasmVNC, Filebrowser, OpenCode, Windows RDP opcional.
 
 ## Parámetros
 - `Habilitar GPUs`: expone GPU si el host la tiene (por defecto ON).
 
 ## Notas
-- Home persistente en volumen Docker (`/home/coder`).
+- Home persistente en volumen Docker (`/home/coder`). Escritorio con accesos directos a las apps clave.
 - KasmVNC para escritorio gráfico; incluye code-server y filebrowser si quieres editar assets/scripts.
-- Si necesitas más programas (Cura, OrcaSlicer, QCAD, LightBurn, simuladores SPICE), avisa y se añaden a la imagen.
+- Labels `com.centurylinklabs.watchtower.*` para que Watchtower pueda actualizar si usas `--label-enable`.
+- Si necesitas más programas (Cura, QCAD, LightBurn, simuladores SPICE), avisa y se añaden a la imagen.
 
 ## Publicación
 Tras actualizar imagen o template:

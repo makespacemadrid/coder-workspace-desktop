@@ -96,6 +96,16 @@ resource "coder_agent" "main" {
     done
     chmod +x ~/Desktop/*.desktop 2>/dev/null || true
 
+    # Entorno virtual de Python listo para usar
+    mkdir -p "$HOME/.venvs"
+    if [ ! -d "$HOME/.venvs/base" ]; then
+      python3 -m venv "$HOME/.venvs/base" || true
+      "$HOME/.venvs/base/bin/pip" install --upgrade pip setuptools wheel || true
+    fi
+    if ! grep -q "source \\$HOME/.venvs/base/bin/activate" "$HOME/.bashrc" 2>/dev/null; then
+      echo 'if [ -f "$HOME/.venvs/base/bin/activate" ]; then source "$HOME/.venvs/base/bin/activate"; fi' >> "$HOME/.bashrc"
+    fi
+
     # Config inicial de OpenCode (opcional)
     if [ -n "$${OPENCODE_PROVIDER_URL:-}" ] && [ -n "$${OPENCODE_API_KEY:-}" ]; then
       mkdir -p /home/coder/.opencode
@@ -388,5 +398,13 @@ resource "docker_container" "workspace" {
   labels {
     label = "coder.workspace_name"
     value = data.coder_workspace.me.name
+  }
+  labels {
+    label = "com.centurylinklabs.watchtower.enable"
+    value = "true"
+  }
+  labels {
+    label = "com.centurylinklabs.watchtower.scope"
+    value = "coder-workspaces"
   }
 }

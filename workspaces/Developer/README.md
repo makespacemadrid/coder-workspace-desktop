@@ -1,20 +1,22 @@
 ---
-display_name: MakeSpace Dev DinD
-description: Entorno de desarrollo con Docker in Docker y GPU opcional
+display_name: Developer
+description: "Workspace de desarrollo general con Docker in Docker y GPU opcional"
 icon: icon.svg
 maintainer_github: makespacemadrid
 tags: [docker, dind, gpu, workspace, makespace]
 ---
 
-# MakeSpace Developer DinD
+# Developer (Docker in Docker)
 
-Template pensado para desarrollar con **Docker in Docker (DinD)** sin tocar el Docker del host. Usa la misma imagen `ghcr.io/makespacemadrid/coder-mks-developer:latest`, escritorio XFCE/KasmVNC y herramientas dev + IA.
+Template pensado para desarrollar con **Docker in Docker (DinD)** sin tocar el Docker del host. Usa la imagen `ghcr.io/makespacemadrid/coder-mks-developer:latest`, escritorio KDE/KasmVNC y herramientas dev + IA.
 
 ## Qué incluye
 - Docker Engine y docker-compose-plugin dentro del contenedor (DinD, no usa el socket del host).
-- Escritorio XFCE/KasmVNC, code-server, Cursor, JupyterLab, Tmux, Filebrowser.
-- Node.js 20 y CLIs de IA (OpenAI/Codex, Claude, Gemini).
-- Volúmenes persistentes: `/home/coder` y `/var/lib/docker` (contenerización DinD persistente).
+- Escritorio KDE/KasmVNC, code-server, Filebrowser, Windows RDP opcional.
+- Apps desktop: VS Code, GitHub Desktop, Claude Desktop, Firefox, Geany, AppImage Pool.
+- Node.js 20 y CLIs de IA (OpenAI/Codex, Claude, Gemini); git/gh, pulseaudio/ALSA para audio.
+- Python con `python3-venv` y venv base en `~/.venvs/base` para usar al arrancar.
+- Volúmenes persistentes: `/home/coder` y `/var/lib/docker` (contenedores DinD persisten entre arranques).
 - Puertos al host opcionales; GPUs opcionales (si el nodo tiene GPU).
 
 ## Parámetros en Coder
@@ -27,6 +29,7 @@ Template pensado para desarrollar con **Docker in Docker (DinD)** sin tocar el D
 - Los contenedores e imágenes DinD se guardan en el volumen `/var/lib/docker`; se limpian si borras el workspace.
 - Para acceso gráfico, abre la consola del workspace y entra a KasmVNC (XFCE).
 - Si necesitas más tooling de sistema, añade en la imagen base o en el startup script.
+- El contenedor lleva labels `com.centurylinklabs.watchtower.*` para que Watchtower pueda actualizarlo si activas `--label-enable`.
 
 ## Cómo publicar cambios
 - Edita este template y la imagen base en `Docker-Images/Developer/Dockerfile`.

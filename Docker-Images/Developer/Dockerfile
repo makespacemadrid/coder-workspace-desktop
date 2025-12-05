@@ -4,7 +4,10 @@ FROM ghcr.io/makespacemadrid/coder-mks-desktop:latest
 LABEL org.opencontainers.image.title="coder-mks-developer" \
       org.opencontainers.image.description="Coder Desktop extendido con utilidades dev, Docker, IA CLI y tooling de consola" \
       org.opencontainers.image.source="https://github.com/makespacemadrid/coder-workspace-desktop" \
-      org.opencontainers.image.url="ghcr.io/makespacemadrid/coder-mks-developer:latest"
+      org.opencontainers.image.url="ghcr.io/makespacemadrid/coder-mks-developer:latest" \
+      com.centurylinklabs.watchtower.enable="true" \
+      com.centurylinklabs.watchtower.scope="coder-workspaces" \
+      com.centurylinklabs.watchtower.lifecycle="rolling"
 
 USER root
 
@@ -157,6 +160,8 @@ RUN mkdir -p /opt/appimagepool && \
     curl -fsSL "${APPIMAGEPOOL_URL}" -o /opt/appimagepool/AppImagePool.AppImage && \
     chmod +x /opt/appimagepool/AppImagePool.AppImage && \
     ln -sf /opt/appimagepool/AppImagePool.AppImage /usr/local/bin/appimagepool && \
+    curl -fsSL "https://raw.githubusercontent.com/prateekmedia/appimagepool/master/data/icons/hicolor/scalable/apps/com.github.prateekmedia.appimagepool.svg" \
+      -o /usr/share/icons/hicolor/scalable/apps/appimagepool.svg && \
     cat > /usr/share/applications/appimagepool.desktop <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -165,6 +170,8 @@ Exec=appimagepool
 Icon=appimagepool
 Categories=Utility;
 EOF
+RUN update-desktop-database /usr/share/applications || true && \
+    gtk-update-icon-cache -q /usr/share/icons/hicolor || true
 
 # Accesos directos en el escritorio por defecto
 RUN set -e; \
