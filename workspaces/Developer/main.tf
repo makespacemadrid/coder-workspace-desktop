@@ -451,7 +451,10 @@ resource "docker_container" "workspace" {
     ip   = "host-gateway"
   }
 
-  extra_hosts = ["coder.mksmad.org:10.0.0.184"]
+  host {
+    host = "coder.mksmad.org"
+    ip   = "10.0.0.184"
+  }
 
   labels {
     label = "coder.owner"

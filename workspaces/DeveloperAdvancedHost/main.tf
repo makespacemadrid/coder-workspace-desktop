@@ -376,7 +376,10 @@ resource "docker_container" "workspace" {
     volume_name    = docker_volume.home_volume.name
   }
 
-  extra_hosts = ["coder.mksmad.org:10.0.0.184"]
+  host {
+    host = "coder.mksmad.org"
+    ip   = "10.0.0.184"
+  }
 
   labels {
     label = "coder.owner"
