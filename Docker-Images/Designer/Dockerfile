@@ -53,6 +53,7 @@ RUN dpkg --add-architecture i386 && \
         wine32 \
         winbind \
         geany \
+        desktop-file-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # OrcaSlicer (AppImage), LaserGRBL (Wine) y VisiCut (.deb)
@@ -98,14 +99,43 @@ RUN printf '[Daemon]\nTimeout=0\nLockOnResume=false\nLockOnSuspend=false\nAutolo
 
 # AppImage Pool (gestor de AppImages con actualizaciones e integración en menú)
 ARG APPIMAGEPOOL_VERSION=5.0.0
-ARG APPIMAGEPOOL_URL=https://github.com/prateekmedia/appimagepool/releases/download/${APPIMAGEPOOL_VERSION}/AppImagePool-${APPIMAGEPOOL_VERSION}-x86_64.AppImage
-RUN mkdir -p /opt/appimagepool && \
-    curl -fsSL "${APPIMAGEPOOL_URL}" -o /opt/appimagepool/AppImagePool.AppImage && \
-    chmod +x /opt/appimagepool/AppImagePool.AppImage && \
-    ln -sf /opt/appimagepool/AppImagePool.AppImage /usr/local/bin/appimagepool && \
-    curl -fsSL "https://raw.githubusercontent.com/prateekmedia/appimagepool/master/data/icons/hicolor/scalable/apps/com.github.prateekmedia.appimagepool.svg" \
-      -o /usr/share/icons/hicolor/scalable/apps/appimagepool.svg && \
-    cat > /usr/share/applications/appimagepool.desktop <<'EOF'
+RUN <<'EOSH'
+set -e
+mkdir -p /opt/appimagepool
+APPIMAGE_URLS=" \
+  https://github.com/prateekmedia/appimagepool/releases/download/${APPIMAGEPOOL_VERSION}/appimagepool-${APPIMAGEPOOL_VERSION}-x86_64.AppImage \
+  https://github.com/prateekmedia/appimagepool/releases/download/${APPIMAGEPOOL_VERSION}/AppImagePool-${APPIMAGEPOOL_VERSION}-x86_64.AppImage \
+  https://github.com/prateekmedia/appimagepool/releases/download/${APPIMAGEPOOL_VERSION}/AppImagePool-${APPIMAGEPOOL_VERSION}.x86_64.AppImage \
+  https://github.com/prateekmedia/appimagepool/releases/latest/download/appimagepool-latest-x86_64.AppImage \
+  https://github.com/prateekmedia/appimagepool/releases/latest/download/AppImagePool-latest-x86_64.AppImage \
+"
+found=""
+for url in $APPIMAGE_URLS; do
+  if curl -fLsS "${url}" -o /opt/appimagepool/AppImagePool.AppImage; then
+    found="$url"
+    break
+  fi
+done
+if [ -z "$found" ] || [ ! -s /opt/appimagepool/AppImagePool.AppImage ]; then
+  echo "AppImage Pool download failed" >&2
+  exit 1
+fi
+chmod +x /opt/appimagepool/AppImagePool.AppImage
+ln -sf /opt/appimagepool/AppImagePool.AppImage /usr/local/bin/appimagepool
+cat <<'EOFICON' > /usr/share/icons/hicolor/scalable/apps/appimagepool.svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b8cf2"/>
+      <stop offset="100%" stop-color="#0c5ea8"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="url(#grad)"/>
+  <path fill="#fff" d="M32 10c-3 0-5.4 2.4-5.4 5.4S29 20.8 32 20.8s5.4-2.4 5.4-5.4S35 10 32 10Zm0 12.9c-3 0-5.4 2.4-5.4 5.4S29 33.6 32 33.6s5.4-2.4 5.4-5.4S35 22.9 32 22.9Zm0 12.9c-3 0-5.4 2.4-5.4 5.4S29 46.6 32 46.6s5.4-2.4 5.4-5.4S35 35.8 32 35.8Z"/>
+  <path fill="#e8f3ff" d="M18 18h4v28h-4zm24 0h4v28h-4z"/>
+</svg>
+EOFICON
+cat <<'EOF' > /usr/share/applications/appimagepool.desktop
 [Desktop Entry]
 Type=Application
 Name=AppImage Pool
@@ -113,5 +143,6 @@ Exec=appimagepool
 Icon=appimagepool
 Categories=Utility;
 EOF
+EOSH
 RUN update-desktop-database /usr/share/applications || true && \
     gtk-update-icon-cache -q /usr/share/icons/hicolor || true

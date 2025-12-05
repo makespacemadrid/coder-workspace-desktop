@@ -19,20 +19,10 @@ Tras modificar imagen o templates:
 2) GH Actions (`.github/workflows/build.yml`) construye y publica la imagen en GHCR con tag `latest` y `sha`.
 3) Ejecuta `coder templates push` desde el repo para actualizar los templates en Coder (solo aplica a nuevos workspaces).
 
-## Actualización rápida de imágenes en el host (asimov)
-- Accede como `makespace@asimov` (ssh ya configurado).
-- Repo clonado en `/docker/coder-workspace-desktop`.
-- Flujo rápido para reconstruir imágenes sin esperar a GitHub Actions:
-  ```sh
-  ssh makespace@asimov
-  cd /docker/coder-workspace-desktop
-  git pull
-  docker build -t ghcr.io/makespacemadrid/coder-mks-developer:latest -f Docker-Images/Developer/Dockerfile .
-  docker build -t ghcr.io/makespacemadrid/coder-mks-design:latest -f Docker-Images/Designer/Dockerfile .
-  # Opcional: docker push ghcr.io/makespacemadrid/coder-mks-developer:latest && docker push ghcr.io/makespacemadrid/coder-mks-design:latest
-  ```
-- Tras el build, recrea los workspaces para que cojan la capa nueva.
-
 ## Watchtower
 - Las imágenes y contenedores vienen etiquetados para `watchtower` (`--label-enable`, scope `coder-workspaces`).
 - Ejemplo de despliegue en `watchtower/docker-compose.yml` (busca updates cada 6h e incluye un servicio de muestra).
+
+## Instrucciones locales / sensibles
+- No incluyas endpoints, hosts ni credenciales en este archivo. Usa `AGENTS.private.md` (gitignore) para instrucciones locales o con datos sensibles del entorno/producción.
+- Mantén `AGENTS.private.md` actualizado con cualquier flujo de actualización manual o accesos específicos de un host.
