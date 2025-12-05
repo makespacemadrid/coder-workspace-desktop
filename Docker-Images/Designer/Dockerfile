@@ -42,6 +42,9 @@ RUN dpkg --add-architecture i386 && \
         fritzing \
         fritzing-data \
         fritzing-parts \
+        cifs-utils \
+        nfs-common \
+        sshfs \
         simulide \
         wine64 \
         wine32 \

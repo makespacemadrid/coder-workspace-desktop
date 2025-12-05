@@ -24,6 +24,9 @@ RUN apt-get update && \
         gnupg \
         git-lfs \
         pre-commit \
+        cifs-utils \
+        nfs-common \
+        sshfs \
         geany \
         dnsutils \
         net-tools \

@@ -345,6 +345,15 @@ resource "docker_container" "workspace" {
 
   # Para mejorar KasmVNC y navegadores
   shm_size = 2 * 1024 * 1024 * 1024
+  # Permitir FUSE/SSHFS y montajes remotos
+  capabilities {
+    add = ["SYS_ADMIN"]
+  }
+  devices {
+    host_path          = "/dev/fuse"
+    container_path     = "/dev/fuse"
+    cgroup_permissions = "rwm"
+  }
 
   volumes {
     container_path = "/home/coder"
