@@ -103,11 +103,6 @@ resource "coder_agent" "main" {
   startup_script = <<-EOT
     set -e
 
-%{ if local.host_override_set ~}
-    # Resolver host de Coder cuando se define HOST_OVERRIDE
-    echo "${local.host_override_parts[1]} ${local.host_override_parts[0]}" | sudo tee --append /etc/hosts
-%{ endif ~}
-
     # Levantar dbus (necesario para apps Electron)
     if ! pgrep -x dbus-daemon >/dev/null 2>&1; then
       sudo mkdir -p /run/dbus

@@ -72,11 +72,6 @@ resource "coder_agent" "main" {
   startup_script = <<-EOT
     set -e
 
-%{ if local.host_override_set ~}
-    # Resolver host de Coder cuando se define HOST_OVERRIDE
-    echo "${local.host_override_parts[1]} ${local.host_override_parts[0]}" | sudo tee --append /etc/hosts
-%{ endif ~}
-
     # KasmVNC busca startkde; en Plasma moderno es startplasma-x11
     if [ -x /usr/bin/startplasma-x11 ] && [ ! -x /usr/bin/startkde ]; then
       sudo ln -sf /usr/bin/startplasma-x11 /usr/bin/startkde
