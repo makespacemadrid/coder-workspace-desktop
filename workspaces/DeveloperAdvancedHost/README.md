@@ -16,7 +16,7 @@ tags: [docker, workspace, host, danger, makespace]
 - Apps desktop: VS Code, GitHub Desktop, Claude Desktop, Firefox, Geany, AppImage Pool.
 - Stack dev: Docker Engine/Compose, Node.js 20, CLIs de IA (Codex, Claude, Gemini), git/gh, pulseaudio/ALSA.
 - Python listo para venvs (`python3-venv`) + venv base en `~/.venvs/base`.
-- Accesos directos precreados en el escritorio y módulos KasmVNC, Filebrowser, OpenCode, Windows RDP.
+- Accesos directos precreados en el escritorio y módulos KasmVNC, Filebrowser, OpenCode. RDP es solo para workspaces Windows según [la guía de Coder](https://coder.com/docs/user-guides/workspace-access/remote-desktops); esta imagen Linux usa KasmVNC.
 
 ## Uso recomendado
 - Pruebas que requieran Docker/Network del host, diagnósticos de red, acceso a GPUs del host.

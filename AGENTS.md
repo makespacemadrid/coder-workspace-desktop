@@ -7,9 +7,12 @@
 - `ghcr.io/makespacemadrid/coder-mks-design:latest` (build desde `Docker-Images/Designer/Dockerfile`). Enfoque en diseño 2D/3D y electrónica: Inkscape, GIMP, Krita, Blender, FreeCAD, OpenSCAD, PrusaSlicer, OrcaSlicer, MeshLab, LibreCAD, KiCad, Fritzing, SimulIDE, LaserGRBL (Wine), AppImage Pool, Geany.
 
 ## Templates
-- `DeveloperAdvancedHost`: **DANGER DANGER, este workspace tiene acceso docker host y network host, usar con cuidado. Si no sabes lo que haces el template Developer es el que buscas.** Misma imagen developer, home persistente. Incluye VS Code, GitHub Desktop, Claude Desktop, AppImage Pool, RDP opcional.
-- `Developer`: Workspace de desarrollo general con Docker-in-Docker, volúmenes persistentes (`/home/coder`, `/var/lib/docker`), GPUs opcionales, red bridge. Misma imagen developer.
-- `Designer`: escritorio KDE/KasmVNC con herramientas de diseño; GPUs opcionales; home persistente; AppImage Pool y módulos Filebrowser/OpenCode/RDP.
+- `DeveloperAdvancedHost`: **DANGER DANGER, este workspace tiene acceso docker host y network host, usar con cuidado. Si no sabes lo que haces el template Developer es el que buscas.** Misma imagen developer, home persistente. Incluye VS Code, GitHub Desktop, Claude Desktop y AppImage Pool. Acceso gráfico vía KasmVNC (RDP solo aplica a workspaces Windows según [docs de Coder](https://coder.com/docs/user-guides/workspace-access/remote-desktops)).
+- `Developer`: Workspace de desarrollo general con Docker-in-Docker, volúmenes persistentes (`/home/coder`, `/var/lib/docker`), GPUs opcionales, red bridge. Misma imagen developer. Acceso gráfico vía KasmVNC.
+- `Designer`: escritorio KDE/KasmVNC con herramientas de diseño; GPUs opcionales; home persistente; AppImage Pool y módulos Filebrowser/OpenCode. KasmVNC para escritorio (RDP no aplica a esta imagen Linux).
+
+## Notas operativas
+- Si el agent de Coder falla al descargar `coder-linux-amd64` por fallos de red/pfSense, hay un bootstrap con fallback local en `assets/agent/bootstrap_linux_local.sh`. Se puede inyectar en el contenedor de `coder server` (o en el provisioner) con `CODER_AGENT_SCRIPT_LINUX_AMD64="$(cat assets/agent/bootstrap_linux_local.sh)"` y opcionalmente `CODER_AGENT_FALLBACK_URL=http://10.0.0.184/bin/coder-linux-amd64` / `CODER_AGENT_FALLBACK_PATH=/var/lib/coder/agent/coder-linux-amd64` para usar un binario servido localmente o montado en disco.
 
 Todos los contenedores llevan labels `com.centurylinklabs.watchtower.*` para que Watchtower pueda actualizarlos si se despliega con `--label-enable` + `--scope coder-workspaces`.
 

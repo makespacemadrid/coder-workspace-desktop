@@ -157,13 +157,6 @@ module "kasmvnc" {
   subdomain           = true
 }
 
-module "windows_rdp" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/windows-rdp/coder"
-  version  = "1.3.0"
-  agent_id = coder_agent.main.id
-}
-
 module "coder-login" {
   count    = data.coder_workspace.me.start_count
   source   = "registry.coder.com/coder/coder-login/coder"

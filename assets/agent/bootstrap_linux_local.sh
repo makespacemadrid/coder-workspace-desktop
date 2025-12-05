@@ -16,10 +16,9 @@ ARCH="${ARCH:-amd64}"
 BINARY_DIR="${BINARY_DIR:-$(mktemp -d -t coder.XXXXXX)}"
 BINARY_NAME=coder
 
-# Primary URL from Coder ACCESS_URL, plus optional fallbacks.
+# Primary URL from Coder ACCESS_URL, plus optional fallback IP (host LAN).
 PRIMARY_URL="${ACCESS_URL}bin/coder-linux-${ARCH}"
 FALLBACK_URL="${CODER_AGENT_FALLBACK_URL:-http://10.0.0.184/bin/coder-linux-${ARCH}}"
-FALLBACK_PATH="${CODER_AGENT_FALLBACK_PATH:-/var/lib/coder/agent/coder-linux-${ARCH}}"
 
 cd "$BINARY_DIR"
 
@@ -41,19 +40,14 @@ try_download() {
 while :; do
 	status=""
 
-	# 1) Local file baked into the host/container (fastest, no network).
-	if [ -f "$FALLBACK_PATH" ]; then
-		cp "$FALLBACK_PATH" "$BINARY_NAME" && break || status=$?
-	fi
-
-	# 2) Local/LAN URL (avoids pfSense if 10.0.0.184 is reachable).
+	# 1) Local/LAN URL (evita pfSense si 10.0.0.184 responde).
 	if try_download "$FALLBACK_URL"; then
 		break
 	else
 		status=$?
 	fi
 
-	# 3) Default URL via ACCESS_URL.
+	# 2) Default URL via ACCESS_URL.
 	if try_download "$PRIMARY_URL"; then
 		break
 	else

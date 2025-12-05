@@ -315,13 +315,6 @@ module "kasmvnc" {
   subdomain           = true
 }
 
-module "windows_rdp" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/windows-rdp/coder"
-  version  = "1.3.0"
-  agent_id = coder_agent.main.id
-}
-
 module "github-upload-public-key" {
   count    = 0 # Deshabilitado temporalmente (external-auth no configurado)
   source   = "registry.coder.com/coder/github-upload-public-key/coder"

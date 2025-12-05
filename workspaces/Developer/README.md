@@ -12,7 +12,7 @@ Template pensado para desarrollar con **Docker in Docker (DinD)** sin tocar el D
 
 ## Qué incluye
 - Docker Engine y docker-compose-plugin dentro del contenedor (DinD, no usa el socket del host).
-- Escritorio KDE/KasmVNC, code-server, Filebrowser, Windows RDP opcional.
+- Escritorio KDE/KasmVNC, code-server y Filebrowser. RDP solo aplica a workspaces Windows (según [docs de Coder](https://coder.com/docs/user-guides/workspace-access/remote-desktops)); esta imagen Linux usa KasmVNC para escritorio.
 - Apps desktop: VS Code, GitHub Desktop, Claude Desktop, Firefox, Geany, AppImage Pool.
 - Node.js 20 y CLIs de IA (OpenAI/Codex, Claude, Gemini); git/gh, pulseaudio/ALSA para audio.
 - Python con `python3-venv` y venv base en `~/.venvs/base` para usar al arrancar.
