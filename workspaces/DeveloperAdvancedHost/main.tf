@@ -15,6 +15,12 @@ variable "docker_socket" {
   type        = string
 }
 
+variable "host_override" {
+  default     = ""
+  description = "(Optional) Host/IP override en formato \"hostname ip\" (ej. \"coder.mksmad.org 10.0.0.184\")"
+  type        = string
+}
+
 # Parámetros opcionales para OpenCode
 data "coder_parameter" "opencode_provider_url" {
   name         = "opencode_provider_url"
@@ -37,6 +43,8 @@ data "coder_parameter" "opencode_api_key" {
 locals {
   username        = data.coder_workspace_owner.me.name
   workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
+  host_override_parts = [for p in split(" ", var.host_override) : p if p != ""]
+  host_override_set   = length(local.host_override_parts) == 2
 }
 
 provider "docker" {
@@ -54,8 +62,10 @@ resource "coder_agent" "main" {
   startup_script = <<-EOT
     set -e
 
-    # Resolver coder.mksmad.org desde dentro del workspace
-    echo "10.0.0.184 coder.mksmad.org" | sudo tee --append /etc/hosts
+%{ if local.host_override_set ~}
+    # Resolver host de Coder cuando se define HOST_OVERRIDE
+    echo "${local.host_override_parts[1]} ${local.host_override_parts[0]}" | sudo tee --append /etc/hosts
+%{ endif ~}
 
     # Levantar dbus (necesario para apps Electron)
     if ! pgrep -x dbus-daemon >/dev/null 2>&1; then
@@ -376,9 +386,12 @@ resource "docker_container" "workspace" {
     volume_name    = docker_volume.home_volume.name
   }
 
-  host {
-    host = "coder.mksmad.org"
-    ip   = "10.0.0.184"
+  dynamic "host" {
+    for_each = local.host_override_set ? [local.host_override_parts] : []
+    content {
+      host = host.value[0]
+      ip   = host.value[1]
+    }
   }
 
   labels {
