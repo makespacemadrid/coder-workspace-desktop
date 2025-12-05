@@ -72,6 +72,14 @@ resource "coder_agent" "main" {
   startup_script = <<-EOT
     set -e
 
+    # Audio: preparar runtime y arrancar PulseAudio si no está activo
+    export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$USER}"
+    mkdir -p "$XDG_RUNTIME_DIR"
+    chmod 700 "$XDG_RUNTIME_DIR"
+    if ! pgrep -x pulseaudio >/dev/null 2>&1; then
+      pulseaudio --start --exit-idle-time=-1 || true
+    fi
+
     # KasmVNC busca startkde; en Plasma moderno es startplasma-x11
     if [ -x /usr/bin/startplasma-x11 ] && [ ! -x /usr/bin/startkde ]; then
       sudo ln -sf /usr/bin/startplasma-x11 /usr/bin/startkde
@@ -240,6 +248,11 @@ resource "docker_container" "workspace" {
   devices {
     host_path          = "/dev/fuse"
     container_path     = "/dev/fuse"
+    permissions        = "rwm"
+  }
+  devices {
+    host_path          = "/dev/snd"
+    container_path     = "/dev/snd"
     permissions        = "rwm"
   }
 

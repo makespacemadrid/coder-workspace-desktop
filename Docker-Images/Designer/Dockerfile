@@ -27,6 +27,8 @@ RUN dpkg --add-architecture i386 && \
         pkg-config \
         python3 python3-venv python3-pip pipx \
         zip unzip p7zip-full \
+        fuse \
+        libfuse2 \
         inkscape \
         gimp \
         krita \
@@ -53,6 +55,9 @@ RUN dpkg --add-architecture i386 && \
         wine32 \
         winbind \
         geany \
+        pulseaudio \
+        pulseaudio-utils \
+        alsa-utils \
         desktop-file-utils \
     && rm -rf /var/lib/apt/lists/*
 
@@ -95,6 +100,7 @@ RUN printf '[Daemon]\nTimeout=0\nLockOnResume=false\nLockOnSuspend=false\nAutolo
       src="/usr/share/applications/$f"; \
       if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
     done && \
+    if [ -f /usr/share/applications/orcaslicer.desktop ]; then ln -sf /usr/share/applications/orcaslicer.desktop /etc/skel/Desktop/orcaslicer.desktop; fi && \
     chmod +x /etc/skel/Desktop/*.desktop || true
 
 # AppImage Pool (gestor de AppImages con actualizaciones e integración en menú)
@@ -122,6 +128,14 @@ if [ -z "$found" ] || [ ! -s /opt/appimagepool/AppImagePool.AppImage ]; then
 fi
 chmod +x /opt/appimagepool/AppImagePool.AppImage
 ln -sf /opt/appimagepool/AppImagePool.AppImage /usr/local/bin/appimagepool
+cat <<'EOFORCA' > /usr/share/applications/orcaslicer.desktop
+[Desktop Entry]
+Type=Application
+Name=OrcaSlicer
+Exec=orcaslicer
+Icon=orcaslicer
+Categories=Graphics;Utility;
+EOFORCA
 cat <<'EOFICON' > /usr/share/icons/hicolor/scalable/apps/appimagepool.svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img">
   <defs>
@@ -146,3 +160,7 @@ EOF
 EOSH
 RUN update-desktop-database /usr/share/applications || true && \
     gtk-update-icon-cache -q /usr/share/icons/hicolor || true
+
+# Qt WebEngine sandbox workaround (FreeCAD/QtWebEngine apps inside containers)
+ENV QTWEBENGINE_DISABLE_SANDBOX=1 \
+    QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox"
