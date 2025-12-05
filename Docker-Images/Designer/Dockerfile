@@ -27,6 +27,7 @@ RUN dpkg --add-architecture i386 && \
         pkg-config \
         python3 python3-venv python3-pip pipx \
         zip unzip p7zip-full \
+        fuse3 \
         libfuse2 \
         inkscape \
         gimp \
@@ -74,6 +75,9 @@ RUN ORCA_VERSION="2.3.1" && \
     apt-get update && apt-get install -y --no-install-recommends /tmp/visicut.deb && \
     rm /tmp/visicut.deb && \
     rm -rf /var/lib/apt/lists/*
+
+# Configuración FUSE para permitir AppImages (allow_other)
+RUN echo "user_allow_other" > /etc/fuse.conf
 
 # Locales
 RUN locale-gen es_ES.UTF-8 en_US.UTF-8 && \

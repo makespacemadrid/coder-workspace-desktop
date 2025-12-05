@@ -73,11 +73,18 @@ resource "coder_agent" "main" {
     set -e
 
     # Audio: preparar runtime y arrancar PulseAudio si no está activo
-    export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$USER}"
+    export XDG_RUNTIME_DIR="$${XDG_RUNTIME_DIR:-/tmp/runtime-$USER}"
     mkdir -p "$XDG_RUNTIME_DIR"
     chmod 700 "$XDG_RUNTIME_DIR"
     if ! pgrep -x pulseaudio >/dev/null 2>&1; then
       pulseaudio --start --exit-idle-time=-1 || true
+    fi
+
+    # Asegurar permisos de FUSE
+    sudo usermod -aG fuse "$USER" || true
+    if [ -e /dev/fuse ]; then
+      sudo chown root:fuse /dev/fuse || true
+      sudo chmod 666 /dev/fuse || true
     fi
 
     # KasmVNC busca startkde; en Plasma moderno es startplasma-x11
@@ -250,11 +257,8 @@ resource "docker_container" "workspace" {
     container_path     = "/dev/fuse"
     permissions        = "rwm"
   }
-  devices {
-    host_path          = "/dev/snd"
-    container_path     = "/dev/snd"
-    permissions        = "rwm"
-  }
+
+  security_opts = ["apparmor:unconfined"]
 
   volumes {
     container_path = "/home/coder"
