@@ -78,6 +78,16 @@ resource "coder_agent" "main" {
       touch ~/.init_done
     fi
 
+    # Refrescar accesos directos en el escritorio (si faltan)
+    mkdir -p ~/Desktop
+    for f in firefox.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop visicut.desktop; do
+      src="/usr/share/applications/$f"
+      if [ -f "$src" ] && [ ! -e "$HOME/Desktop/$f" ]; then
+        ln -sf "$src" "$HOME/Desktop/$f"
+      fi
+    done
+    chmod +x ~/Desktop/*.desktop 2>/dev/null || true
+
     # Config inicial de OpenCode (opcional)
     if [ -n "$${OPENCODE_PROVIDER_URL:-}" ] && [ -n "$${OPENCODE_API_KEY:-}" ]; then
       mkdir -p /home/coder/.opencode
