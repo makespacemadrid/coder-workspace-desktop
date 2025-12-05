@@ -80,7 +80,7 @@ resource "coder_agent" "main" {
 
     # Refrescar accesos directos en el escritorio (si faltan)
     mkdir -p ~/Desktop
-    for f in firefox.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop visicut.desktop; do
+    for f in firefox.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop visicut.desktop geany.desktop; do
       src="/usr/share/applications/$f"
       if [ -f "$src" ] && [ ! -e "$HOME/Desktop/$f" ]; then
         ln -sf "$src" "$HOME/Desktop/$f"

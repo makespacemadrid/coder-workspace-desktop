@@ -24,6 +24,7 @@ RUN apt-get update && \
         gnupg \
         git-lfs \
         pre-commit \
+        geany \
         dnsutils \
         net-tools \
         lsof \
@@ -145,7 +146,7 @@ EOSH
 # Accesos directos en el escritorio por defecto
 RUN set -e; \
     mkdir -p /etc/skel/Desktop && \
-    for f in code.desktop github-desktop.desktop claude-desktop.desktop firefox.desktop; do \
+    for f in code.desktop github-desktop.desktop claude-desktop.desktop firefox.desktop geany.desktop; do \
       src="/usr/share/applications/$f"; \
       if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
     done; \
