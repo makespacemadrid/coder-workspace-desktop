@@ -24,6 +24,8 @@ RUN apt-get update && \
         gnupg \
         git-lfs \
         pre-commit \
+        dbus \
+        dbus-x11 \
         cifs-utils \
         nfs-common \
         sshfs \

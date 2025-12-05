@@ -98,6 +98,12 @@ resource "coder_agent" "main" {
     # Resolver coder.mksmad.org desde dentro del workspace
     echo "10.0.0.184 coder.mksmad.org" | sudo tee --append /etc/hosts
 
+    # Levantar dbus (necesario para apps Electron)
+    if ! pgrep -x dbus-daemon >/dev/null 2>&1; then
+      sudo mkdir -p /run/dbus
+      sudo dbus-daemon --system --fork || true
+    fi
+
     # Asegurar /home/coder como HOME efectivo incluso si se ejecuta como root
     sudo mkdir -p /home/coder
     sudo chown "$USER:$USER" /home/coder || true
