@@ -130,20 +130,20 @@ ENV ELECTRON_DISABLE_SANDBOX=1 \
 RUN <<'EOSH'
 set -e
 wrap() {
-  local name="$1"; local target="$2"
+  local name="$1"; local target="$2"; local extra="$3"
   if [ -x "$target" ]; then
     mv "$name" "${name}.real" || true
     cat > "$name" <<SHWRAP
 #!/bin/sh
 exec env ELECTRON_DISABLE_SANDBOX=1 ELECTRON_OZONE_PLATFORM_HINT="${ELECTRON_OZONE_PLATFORM_HINT:-auto}" \
-  "$target" --no-sandbox "$@"
+  "$target" --no-sandbox --disable-gpu-sandbox --disable-setuid-sandbox --disable-seccomp-filter-sandbox --no-zygote $EXTRA_FLAGS "$@"
 SHWRAP
     chmod +x "$name"
   fi
 }
-TARGET_BIN=/usr/lib/github-desktop/github-desktop wrap /usr/bin/github-desktop /usr/lib/github-desktop/github-desktop
-TARGET_BIN=/usr/share/claude-desktop/claude-desktop wrap /usr/bin/claude-desktop /usr/share/claude-desktop/claude-desktop
-TARGET_BIN=/usr/share/code/bin/code wrap /usr/bin/code /usr/share/code/bin/code
+TARGET_BIN=/usr/lib/github-desktop/github-desktop EXTRA_FLAGS="--password-store=basic" wrap /usr/bin/github-desktop /usr/lib/github-desktop/github-desktop
+TARGET_BIN=/usr/share/claude-desktop/claude-desktop EXTRA_FLAGS="--disable-gpu" wrap /usr/bin/claude-desktop /usr/share/claude-desktop/claude-desktop
+TARGET_BIN=/usr/share/code/bin/code EXTRA_FLAGS="" wrap /usr/bin/code /usr/share/code/bin/code
 EOSH
 
 # AppImage Pool (gestor de AppImages con actualizaciones e integración en menú)
