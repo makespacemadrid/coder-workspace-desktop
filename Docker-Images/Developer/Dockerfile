@@ -26,6 +26,8 @@ RUN apt-get update && \
         pre-commit \
         dbus \
         dbus-x11 \
+        pulseaudio \
+        alsa-utils \
         cifs-utils \
         nfs-common \
         sshfs \
