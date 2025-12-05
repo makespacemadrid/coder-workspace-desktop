@@ -235,7 +235,7 @@ resource "docker_container" "workspace" {
   devices {
     host_path          = "/dev/fuse"
     container_path     = "/dev/fuse"
-    cgroup_permissions = "rwm"
+    permissions        = "rwm"
   }
 
   volumes {
