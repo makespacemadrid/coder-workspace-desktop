@@ -92,3 +92,19 @@ RUN printf '[Daemon]\nTimeout=0\nLockOnResume=false\nLockOnSuspend=false\nAutolo
       if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
     done && \
     chmod +x /etc/skel/Desktop/*.desktop || true
+
+# AppImage Pool (gestor de AppImages con actualizaciones e integración en menú)
+ARG APPIMAGEPOOL_VERSION=5.0.0
+ARG APPIMAGEPOOL_URL=https://github.com/prateekmedia/appimagepool/releases/download/${APPIMAGEPOOL_VERSION}/AppImagePool-${APPIMAGEPOOL_VERSION}-x86_64.AppImage
+RUN mkdir -p /opt/appimagepool && \
+    curl -fsSL "${APPIMAGEPOOL_URL}" -o /opt/appimagepool/AppImagePool.AppImage && \
+    chmod +x /opt/appimagepool/AppImagePool.AppImage && \
+    ln -sf /opt/appimagepool/AppImagePool.AppImage /usr/local/bin/appimagepool && \
+    cat > /usr/share/applications/appimagepool.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=AppImage Pool
+Exec=appimagepool
+Icon=appimagepool
+Categories=Utility;
+EOF

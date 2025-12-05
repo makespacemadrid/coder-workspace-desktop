@@ -146,10 +146,26 @@ TARGET_BIN=/usr/share/claude-desktop/claude-desktop wrap /usr/bin/claude-desktop
 TARGET_BIN=/usr/share/code/bin/code wrap /usr/bin/code /usr/share/code/bin/code
 EOSH
 
+# AppImage Pool (gestor de AppImages con actualizaciones e integración en menú)
+ARG APPIMAGEPOOL_VERSION=5.0.0
+ARG APPIMAGEPOOL_URL=https://github.com/prateekmedia/appimagepool/releases/download/${APPIMAGEPOOL_VERSION}/AppImagePool-${APPIMAGEPOOL_VERSION}-x86_64.AppImage
+RUN mkdir -p /opt/appimagepool && \
+    curl -fsSL "${APPIMAGEPOOL_URL}" -o /opt/appimagepool/AppImagePool.AppImage && \
+    chmod +x /opt/appimagepool/AppImagePool.AppImage && \
+    ln -sf /opt/appimagepool/AppImagePool.AppImage /usr/local/bin/appimagepool && \
+    cat > /usr/share/applications/appimagepool.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=AppImage Pool
+Exec=appimagepool
+Icon=appimagepool
+Categories=Utility;
+EOF
+
 # Accesos directos en el escritorio por defecto
 RUN set -e; \
     mkdir -p /etc/skel/Desktop && \
-    for f in code.desktop github-desktop.desktop claude-desktop.desktop firefox.desktop geany.desktop; do \
+    for f in code.desktop github-desktop.desktop claude-desktop.desktop firefox.desktop geany.desktop appimagepool.desktop; do \
       src="/usr/share/applications/$f"; \
       if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
     done; \
