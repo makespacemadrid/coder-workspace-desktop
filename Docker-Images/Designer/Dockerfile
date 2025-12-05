@@ -27,7 +27,6 @@ RUN dpkg --add-architecture i386 && \
         pkg-config \
         python3 python3-venv python3-pip pipx \
         zip unzip p7zip-full \
-        fuse \
         libfuse2 \
         inkscape \
         gimp \
