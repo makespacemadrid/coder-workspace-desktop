@@ -113,15 +113,8 @@ RUN set -e; \
     fi; \
     rm -rf /var/lib/apt/lists/*
 
-# Desactivar bloqueo/ahorro de pantalla (KDE) y dejar accesos directos en Desktop
-RUN printf '[Daemon]\nTimeout=0\nLockOnResume=false\nLockOnSuspend=false\nAutolock=false\n' > /etc/xdg/kscreenlockerrc && \
-    mkdir -p /etc/skel/Desktop && \
-    for f in firefox.desktop org.freecadweb.FreeCAD.desktop freecad.desktop inkscape.desktop org.gimp.GIMP.desktop krita.desktop kicad.desktop openscad.desktop prusa-slicer.desktop librecad.desktop meshlab.desktop fritzing.desktop simulide.desktop geany.desktop visicut.desktop appimagepool.desktop; do \
-      src="/usr/share/applications/$f"; \
-      if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
-    done && \
-    if [ -f /usr/share/applications/orcaslicer.desktop ]; then ln -sf /usr/share/applications/orcaslicer.desktop /etc/skel/Desktop/orcaslicer.desktop; fi && \
-    chmod +x /etc/skel/Desktop/*.desktop || true
+# Desactivar bloqueo/ahorro de pantalla (KDE)
+RUN printf '[Daemon]\nTimeout=0\nLockOnResume=false\nLockOnSuspend=false\nAutolock=false\n' > /etc/xdg/kscreenlockerrc
 
 # AppImage Pool (gestor de AppImages con actualizaciones e integración en menú)
 ARG APPIMAGEPOOL_VERSION=5.0.0
@@ -180,6 +173,14 @@ EOF
 EOSH
 RUN update-desktop-database /usr/share/applications || true && \
     gtk-update-icon-cache -q /usr/share/icons/hicolor || true
+
+# Crear accesos directos en Desktop para todas las aplicaciones
+RUN mkdir -p /etc/skel/Desktop && \
+    for f in firefox.desktop org.freecadweb.FreeCAD.desktop org.inkscape.Inkscape.desktop gimp.desktop org.kde.krita.desktop org.kicad.kicad.desktop openscad.desktop PrusaSlicer.desktop librecad.desktop meshlab.desktop org.fritzing.Fritzing.desktop net.launchpad.code.simulide.desktop geany.desktop VisiCut.desktop orcaslicer.desktop appimagepool.desktop; do \
+      src="/usr/share/applications/$f"; \
+      if [ -f "$src" ]; then ln -sf "$src" "/etc/skel/Desktop/$f"; fi; \
+    done && \
+    chmod +x /etc/skel/Desktop/*.desktop || true
 
 # Qt WebEngine sandbox workaround (FreeCAD/QtWebEngine apps inside containers)
 ENV QTWEBENGINE_DISABLE_SANDBOX=1 \
