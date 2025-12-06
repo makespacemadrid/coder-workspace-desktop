@@ -71,6 +71,21 @@ resource "coder_agent" "main" {
       sudo chmod 666 /dev/fuse || true
     fi
 
+    # Configurar PulseAudio para soporte de audio en KasmVNC
+    sudo usermod -aG audio "$USER" || true
+    mkdir -p ~/.config/pulse
+    if [ ! -f ~/.config/pulse/client.conf ]; then
+      cat > ~/.config/pulse/client.conf <<'PULSECFG'
+autospawn = yes
+daemon-binary = /usr/bin/pulseaudio
+enable-shm = false
+PULSECFG
+    fi
+    # Iniciar PulseAudio si no está corriendo
+    if ! pgrep -u "$USER" pulseaudio >/dev/null 2>&1; then
+      pulseaudio --start --exit-idle-time=-1 || true
+    fi
+
     # KasmVNC busca startkde; en Plasma moderno es startplasma-x11
     if [ -x /usr/bin/startplasma-x11 ] && [ ! -x /usr/bin/startkde ]; then
       sudo ln -sf /usr/bin/startplasma-x11 /usr/bin/startkde

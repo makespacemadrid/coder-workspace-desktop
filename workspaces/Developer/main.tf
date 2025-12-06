@@ -101,6 +101,21 @@ resource "coder_agent" "main" {
       sudo dbus-daemon --system --fork || true
     fi
 
+    # Configurar PulseAudio para soporte de audio en KasmVNC
+    sudo usermod -aG audio "$USER" || true
+    mkdir -p ~/.config/pulse
+    if [ ! -f ~/.config/pulse/client.conf ]; then
+      cat > ~/.config/pulse/client.conf <<'PULSECFG'
+autospawn = yes
+daemon-binary = /usr/bin/pulseaudio
+enable-shm = false
+PULSECFG
+    fi
+    # Iniciar PulseAudio si no está corriendo
+    if ! pgrep -u "$USER" pulseaudio >/dev/null 2>&1; then
+      pulseaudio --start --exit-idle-time=-1 || true
+    fi
+
     # Asegurar /home/coder como HOME efectivo incluso si se ejecuta como root
     sudo mkdir -p /home/coder
     sudo chown "$USER:$USER" /home/coder || true

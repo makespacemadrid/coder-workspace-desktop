@@ -61,6 +61,9 @@ RUN dpkg --add-architecture i386 && \
         nano \
         iputils-ping \
         byobu \
+        pulseaudio \
+        pulseaudio-utils \
+        alsa-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # OrcaSlicer (AppImage), LaserGRBL (Wine) y VisiCut (.deb)

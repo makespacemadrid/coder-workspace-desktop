@@ -52,6 +52,9 @@ RUN apt-get update && \
         nano \
         iputils-ping \
         byobu \
+        pulseaudio \
+        pulseaudio-utils \
+        alsa-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Configuración FUSE para permitir AppImages (allow_other)
