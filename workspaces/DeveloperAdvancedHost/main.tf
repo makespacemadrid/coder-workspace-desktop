@@ -34,6 +34,15 @@ data "coder_parameter" "opencode_api_key" {
   mutable      = true
 }
 
+data "coder_parameter" "git_repo_url" {
+  name         = "git_repo_url"
+  display_name = "Repositorio Git (opcional)"
+  description  = "URL de Git para clonar en ~/projects/<repo> en el primer arranque"
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
 locals {
   username        = data.coder_workspace_owner.me.name
   workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
@@ -159,11 +168,11 @@ JSONCFG
   EOT
 
   env = {
-    GIT_AUTHOR_NAME     = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
-    GIT_AUTHOR_EMAIL    = data.coder_workspace_owner.me.email
-    GIT_COMMITTER_NAME  = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
-    GIT_COMMITTER_EMAIL = data.coder_workspace_owner.me.email
-    HOME                = "/home/coder"
+    GIT_AUTHOR_NAME       = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
+    GIT_AUTHOR_EMAIL      = data.coder_workspace_owner.me.email
+    GIT_COMMITTER_NAME    = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
+    GIT_COMMITTER_EMAIL   = data.coder_workspace_owner.me.email
+    HOME                  = "/home/coder"
     OPENCODE_PROVIDER_URL = data.coder_parameter.opencode_provider_url.value
     OPENCODE_API_KEY      = data.coder_parameter.opencode_api_key.value
   }
@@ -247,6 +256,15 @@ module "git-config" {
   source   = "registry.coder.com/coder/git-config/coder"
   version  = "1.0.32"
   agent_id = coder_agent.main.id
+}
+
+module "git-clone" {
+  count       = data.coder_parameter.git_repo_url.value != "" ? data.coder_workspace.me.start_count : 0
+  source      = "registry.coder.com/coder/git-clone/coder"
+  version     = "1.2.2"
+  agent_id    = coder_agent.main.id
+  url         = data.coder_parameter.git_repo_url.value
+  base_dir    = "~/projects"
 }
 
 module "coder-login" {

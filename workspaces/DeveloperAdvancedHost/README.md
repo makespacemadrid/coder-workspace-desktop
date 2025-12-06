@@ -22,6 +22,9 @@ tags: [docker, workspace, host, danger, makespace]
 - Pruebas que requieran Docker/Network del host, diagnósticos de red, acceso a GPUs del host.
 - Si no necesitas tocar el host, usa el template `Developer` (DinD) para más aislamiento.
 
+## Parámetros
+- `Repositorio Git (opcional)`: URL para clonar en `~/projects/<nombre-del-repo>` en el primer arranque del workspace.
+
 ## Notas
 - El contenedor lleva labels `com.centurylinklabs.watchtower.*` para que Watchtower pueda actualizarlo si activas `--label-enable`.
 - Home persistente en `/home/coder`.
