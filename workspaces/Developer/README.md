@@ -23,6 +23,13 @@ Template pensado para desarrollar con **Docker in Docker (DinD)** sin tocar el D
 - `Expose ports`: habilita o no el mapeo de puertos al host.
 - `port_range_start` / `port_range_end`: rango a exponer si activas el mapeo.
 - `Habilitar GPUs`: activa `--gpus all` en el contenedor. Úsalo solo si el nodo tiene GPU configurada.
+- `Ruta host para /home (opcional)`: monta `/home/coder` desde una carpeta del host; si lo dejas vacío se usa el volumen Docker persistente.
+- `UID para /home host (opcional)`: UID con el que se ejecutará el contenedor cuando montas la ruta host (útil si la carpeta no es UID 1000).
+- `Nombre volumen /home (opcional)`: nombre para el volumen de `/home/coder` cuando no montas ruta host; por defecto se usa `coder-<workspace-id>-home`.
+- `Volumen /home existente (opcional)`: nombre de un volumen ya creado para usarlo como `/home/coder` (no se creará uno nuevo).
+- `Ruta host para /home/coder/host-data (opcional)`: monta una carpeta del host dentro del home en `~/host-data`.
+- `Nombre volumen Docker data (opcional)`: nombre para el volumen nuevo de `/var/lib/docker` (DinD); si lo dejas vacío se usa el nombre por defecto.
+- `Volumen Docker data existente (opcional)`: nombre de un volumen ya creado para usarlo en `/var/lib/docker` sin crear otro.
 - `Repositorio Git (opcional)`: URL para clonar en `~/projects/<nombre-del-repo>` en el primer arranque del workspace.
 
 ## Notas de uso

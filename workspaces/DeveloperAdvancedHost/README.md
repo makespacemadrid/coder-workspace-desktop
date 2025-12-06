@@ -23,6 +23,11 @@ tags: [docker, workspace, host, danger, makespace]
 - Si no necesitas tocar el host, usa el template `Developer` (DinD) para más aislamiento.
 
 ## Parámetros
+- `Ruta host para /home (opcional)`: monta `/home/coder` desde una carpeta del host en lugar de un volumen.
+- `UID para /home host (opcional)`: UID para ejecutar el contenedor cuando usas la ruta host, evitando problemas de permisos.
+- `Nombre volumen /home (opcional)`: nombre del volumen de `/home/coder` si no montas ruta host (por defecto `coder-<workspace-id>-home`).
+- `Volumen /home existente (opcional)`: nombre de un volumen ya creado para usarlo como `/home/coder` (no se crea uno nuevo).
+- `Ruta host para /home/coder/host-data (opcional)`: monta una carpeta del host dentro del home en `~/host-data`.
 - `Repositorio Git (opcional)`: URL para clonar en `~/projects/<nombre-del-repo>` en el primer arranque del workspace.
 
 ## Notas

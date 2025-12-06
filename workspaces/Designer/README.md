@@ -21,6 +21,11 @@ Template con escritorio KDE/KasmVNC y herramientas de diseño 2D/3D + electróni
 
 ## Parámetros
 - `Habilitar GPUs`: expone GPU si el host la tiene (por defecto ON).
+- `Ruta host para /home (opcional)`: monta `/home/coder` desde una carpeta del host en lugar del volumen Docker.
+- `UID para /home host (opcional)`: UID para ejecutar el contenedor cuando montas la ruta host, por si la carpeta no es UID 1000.
+- `Nombre volumen /home (opcional)`: nombre del volumen de `/home/coder` cuando no montas ruta host (por defecto `coder-<workspace-id>-home`).
+- `Volumen /home existente (opcional)`: nombre de un volumen ya creado para reutilizarlo en `/home/coder` (evita crear uno nuevo).
+- `Ruta host para /home/coder/host-data (opcional)`: monta una carpeta del host dentro del home en `~/host-data`.
 - `Repositorio Git (opcional)`: URL para clonar en `~/projects/<nombre-del-repo>` en el primer arranque del workspace.
 
 ## Notas

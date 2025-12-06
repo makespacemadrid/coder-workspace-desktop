@@ -82,11 +82,91 @@ data "coder_parameter" "git_repo_url" {
   mutable      = true
 }
 
+data "coder_parameter" "docker_data_volume_name" {
+  name         = "docker_data_volume_name"
+  display_name = "Nombre volumen Docker data (opcional)"
+  description  = "Nombre del volumen nuevo para /var/lib/docker. Si se deja vacío usa el nombre por defecto del workspace."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "docker_data_volume_existing" {
+  name         = "docker_data_volume_existing"
+  display_name = "Volumen Docker data existente (opcional)"
+  description  = "Usa un volumen existente para /var/lib/docker y evita crear uno nuevo. Dejar vacío para crear volumen."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "home_host_path" {
+  name         = "home_host_path"
+  display_name = "Ruta host para /home (opcional)"
+  description  = "Montar /home/coder desde una ruta del host en lugar de un volumen Docker. Dejar vacío para usar el volumen por defecto."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "home_host_uid" {
+  name         = "home_host_uid"
+  display_name = "UID para /home host (opcional)"
+  description  = "UID de la carpeta de /home en el host (se usará como usuario del contenedor). Dejar vacío para usar el usuario coder."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "home_volume_name" {
+  name         = "home_volume_name"
+  display_name = "Nombre volumen /home (opcional)"
+  description  = "Nombre del volumen Docker para /home/coder cuando no se monta ruta host. Si se deja vacío se usa el nombre por defecto."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "home_volume_existing" {
+  name         = "home_volume_existing"
+  display_name = "Volumen /home existente (opcional)"
+  description  = "Nombre de un volumen Docker ya creado para usarlo en /home/coder. Si se deja vacío se creará un volumen."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "host_data_path" {
+  name         = "host_data_path"
+  display_name = "Ruta host para /home/coder/host-data (opcional)"
+  description  = "Montar una ruta del host en /home/coder/host-data dentro del contenedor. Dejar vacío para omitir."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
 locals {
   username        = data.coder_workspace_owner.me.name
   workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
   port_range      = data.coder_parameter.expose_ports.value ? range(data.coder_parameter.port_range_start.value, data.coder_parameter.port_range_end.value + 1) : []
   enable_gpu      = data.coder_parameter.enable_gpu.value
+  home_host_path  = trimspace(data.coder_parameter.home_host_path.value)
+  home_host_uid   = trimspace(data.coder_parameter.home_host_uid.value)
+  host_data_path  = trimspace(data.coder_parameter.host_data_path.value)
+  home_volume_existing = trimspace(data.coder_parameter.home_volume_existing.value)
+  home_volume_name     = trimspace(data.coder_parameter.home_volume_name.value)
+  home_volume_resolved = coalesce(
+    local.home_volume_existing != "" ? local.home_volume_existing : null,
+    local.home_volume_name != "" ? local.home_volume_name : null,
+    "coder-${data.coder_workspace.me.id}-home"
+  )
+  data_volume_existing = trimspace(data.coder_parameter.docker_data_volume_existing.value)
+  data_volume_name     = trimspace(data.coder_parameter.docker_data_volume_name.value)
+  docker_data_volume_name = coalesce(
+    local.data_volume_existing != "" ? local.data_volume_existing : null,
+    local.data_volume_name != "" ? local.data_volume_name : null,
+    "coder-${data.coder_workspace.me.id}-docker-data"
+  )
 }
 
 provider "docker" {
@@ -378,7 +458,8 @@ module "opencode" {
 # ---------------------------------------------------------------
 
 resource "docker_volume" "home_volume" {
-  name = "coder-${data.coder_workspace.me.id}-home"
+  count = local.home_host_path == "" && local.home_volume_existing == "" ? 1 : 0
+  name  = local.home_volume_resolved
 
   lifecycle {
     ignore_changes = all
@@ -403,7 +484,8 @@ resource "docker_volume" "home_volume" {
 }
 
 resource "docker_volume" "docker_data" {
-  name = "coder-${data.coder_workspace.me.id}-docker-data"
+  count = local.data_volume_existing == "" ? 1 : 0
+  name  = local.docker_data_volume_name
 
   lifecycle {
     ignore_changes = all
@@ -437,7 +519,7 @@ resource "docker_container" "workspace" {
   name     = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}"
   hostname = data.coder_workspace.me.name
 
-  user = "coder"
+  user = local.home_host_uid != "" ? local.home_host_uid : "coder"
 
   privileged = true
 
@@ -466,14 +548,36 @@ resource "docker_container" "workspace" {
 
   shm_size = 2 * 1024 * 1024 * 1024
 
-  volumes {
-    container_path = "/home/coder"
-    volume_name    = docker_volume.home_volume.name
+  dynamic "volumes" {
+    for_each = local.home_host_path != "" ? [1] : []
+    content {
+      container_path = "/home/coder"
+      host_path      = local.home_host_path
+    }
   }
 
-  volumes {
-    container_path = "/var/lib/docker"
-    volume_name    = docker_volume.docker_data.name
+  dynamic "volumes" {
+    for_each = local.home_host_path == "" ? [local.home_volume_resolved] : []
+    content {
+      container_path = "/home/coder"
+      volume_name    = volumes.value
+    }
+  }
+
+  dynamic "volumes" {
+    for_each = local.host_data_path != "" ? [1] : []
+    content {
+      container_path = "/home/coder/host-data"
+      host_path      = local.host_data_path
+    }
+  }
+
+  dynamic "volumes" {
+    for_each = [local.docker_data_volume_name]
+    content {
+      container_path = "/var/lib/docker"
+      volume_name    = volumes.value
+    }
   }
 
   host {
