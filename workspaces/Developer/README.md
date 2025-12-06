@@ -23,6 +23,7 @@ Template pensado para desarrollar con **Docker in Docker (DinD)** sin tocar el D
 - `Expose ports`: habilita o no el mapeo de puertos al host.
 - `port_range_start` / `port_range_end`: rango a exponer si activas el mapeo.
 - `Habilitar GPUs`: activa `--gpus all` en el contenedor. Úsalo solo si el nodo tiene GPU configurada.
+- `Repositorio Git (opcional)`: URL para clonar en `~/projects/<nombre-del-repo>` en el primer arranque del workspace.
 
 ## Notas de uso
 - El daemon Docker se arranca dentro del contenedor en el startup script (`dockerd` con overlay2). No usa el socket del host.

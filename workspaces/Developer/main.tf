@@ -73,6 +73,15 @@ data "coder_parameter" "opencode_api_key" {
   mutable      = true
 }
 
+data "coder_parameter" "git_repo_url" {
+  name         = "git_repo_url"
+  display_name = "Repositorio Git (opcional)"
+  description  = "URL de Git para clonar en ~/projects/<repo> en el primer arranque"
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
 locals {
   username        = data.coder_workspace_owner.me.name
   workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
@@ -303,6 +312,15 @@ module "git-config" {
   source   = "registry.coder.com/coder/git-config/coder"
   version  = "1.0.32"
   agent_id = coder_agent.main.id
+}
+
+module "git-clone" {
+  count       = data.coder_parameter.git_repo_url.value != "" ? data.coder_workspace.me.start_count : 0
+  source      = "registry.coder.com/coder/git-clone/coder"
+  version     = "1.2.2"
+  agent_id    = coder_agent.main.id
+  url         = data.coder_parameter.git_repo_url.value
+  base_dir    = "~/projects"
 }
 
 module "coder-login" {

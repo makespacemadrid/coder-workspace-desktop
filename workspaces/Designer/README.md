@@ -21,6 +21,7 @@ Template con escritorio KDE/KasmVNC y herramientas de diseño 2D/3D + electróni
 
 ## Parámetros
 - `Habilitar GPUs`: expone GPU si el host la tiene (por defecto ON).
+- `Repositorio Git (opcional)`: URL para clonar en `~/projects/<nombre-del-repo>` en el primer arranque del workspace.
 
 ## Notas
 - Home persistente en volumen Docker (`/home/coder`). Escritorio con accesos directos a las apps clave.
