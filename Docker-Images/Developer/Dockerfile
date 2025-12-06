@@ -47,6 +47,11 @@ RUN apt-get update && \
         tmux \
         direnv \
         zip unzip p7zip-full \
+        command-not-found \
+        bash-completion \
+        nano \
+        iputils-ping \
+        byobu \
     && rm -rf /var/lib/apt/lists/*
 
 # Configuración FUSE para permitir AppImages (allow_other)

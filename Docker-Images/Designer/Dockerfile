@@ -56,6 +56,11 @@ RUN dpkg --add-architecture i386 && \
         winbind \
         geany \
         desktop-file-utils \
+        command-not-found \
+        bash-completion \
+        nano \
+        iputils-ping \
+        byobu \
     && rm -rf /var/lib/apt/lists/*
 
 # OrcaSlicer (AppImage), LaserGRBL (Wine) y VisiCut (.deb)
