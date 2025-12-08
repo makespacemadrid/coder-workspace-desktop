@@ -65,12 +65,17 @@ resource "coder_agent" "main" {
     if [ -f /sys/fs/cgroup/cgroup.controllers ]; then
       echo ">> Enabling cgroup v2 delegation for DinD..."
       sudo mkdir -p /sys/fs/cgroup/init
-      while ! {
-        sudo xargs -rn1 < /sys/fs/cgroup/cgroup.procs > /sys/fs/cgroup/init/cgroup.procs 2>/dev/null || true
-        sudo sh -c 'sed -e "s/ / +/g" -e "s/^/+/" < /sys/fs/cgroup/cgroup.controllers > /sys/fs/cgroup/cgroup.subtree_control'
-      }; do
-        sleep 0.1
-      done
+      if [ ! -w /sys/fs/cgroup/init/cgroup.procs ] || [ ! -w /sys/fs/cgroup/cgroup.subtree_control ]; then
+        echo ">> cgroup v2 not writable; skipping delegation (likely already handled by host)"
+      else
+        for _ in $(seq 1 20); do
+          sudo xargs -rn1 < /sys/fs/cgroup/cgroup.procs > /sys/fs/cgroup/init/cgroup.procs 2>/dev/null || true
+          if sudo sh -c 'sed -e "s/ / +/g" -e "s/^/+/" < /sys/fs/cgroup/cgroup.controllers > /sys/fs/cgroup/cgroup.subtree_control'; then
+            break
+          fi
+          sleep 0.1
+        done
+      fi
     fi
 
     if ! pgrep dockerd >/dev/null 2>&1; then
