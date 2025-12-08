@@ -54,6 +54,37 @@ resource "coder_agent" "main" {
       touch ~/.init_done
     fi
 
+    # Docker Engine: instalar si falta y arrancar dockerd (DinD)
+    if ! command -v dockerd >/dev/null 2>&1; then
+      echo ">> Installing Docker (docker.io)..."
+      sudo apt-get update -y
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io
+    fi
+
+    # Cgroup v2: delegar controladores para Docker in Docker (evita modo threaded)
+    if [ -f /sys/fs/cgroup/cgroup.controllers ]; then
+      echo ">> Enabling cgroup v2 delegation for DinD..."
+      sudo mkdir -p /sys/fs/cgroup/init
+      while ! {
+        sudo xargs -rn1 < /sys/fs/cgroup/cgroup.procs > /sys/fs/cgroup/init/cgroup.procs 2>/dev/null || true
+        sudo sh -c 'sed -e "s/ / +/g" -e "s/^/+/" < /sys/fs/cgroup/cgroup.controllers > /sys/fs/cgroup/cgroup.subtree_control'
+      }; do
+        sleep 0.1
+      done
+    fi
+
+    if ! pgrep dockerd >/dev/null 2>&1; then
+      echo ">> Starting dockerd (DinD)..."
+      sudo dockerd --host=unix:///var/run/docker.sock --storage-driver=overlay2 >/tmp/dockerd.log 2>&1 &
+      for i in $(seq 1 30); do
+        if sudo docker info >/dev/null 2>&1; then
+          echo ">> dockerd ready"
+          break
+        fi
+        sleep 1
+      done
+    fi
+
   EOT
 
   env = {
@@ -71,13 +102,6 @@ module "code-server" {
   version  = "~> 1.0"
   agent_id = coder_agent.main.id
   order    = 1
-}
-
-module "docker-in-docker" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/docker-in-docker/coder"
-  version  = "~> 1.0"
-  agent_id = coder_agent.main.id
 }
 
 module "git-config" {

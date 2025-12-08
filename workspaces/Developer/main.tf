@@ -19,10 +19,19 @@ variable "docker_socket" {
 #   Parámetros visibles en Coder
 # ================================
 
+data "coder_parameter" "enable_gpu" {
+  name         = "enable_gpu"
+  display_name = "GPU (si disponible)"
+  description  = "Activa --gpus all en el contenedor; solo si el nodo tiene GPU configurada."
+  type         = "bool"
+  default      = false
+  mutable      = true
+}
+
 data "coder_parameter" "expose_ports" {
   name         = "expose_ports"
-  display_name = "Expose ports to host"
-  description  = "Activa o desactiva el mapeo de puertos hacia el host"
+  display_name = "Exponer puertos al host"
+  description  = "Mapea un rango de puertos del workspace hacia el host (bridge)."
   type         = "bool"
   default      = false
   mutable      = true
@@ -30,8 +39,8 @@ data "coder_parameter" "expose_ports" {
 
 data "coder_parameter" "port_range_start" {
   name         = "port_range_start"
-  display_name = "Port range start"
-  description  = "Puerto inicial del rango a exponer en el host"
+  display_name = "Puerto inicial a exponer"
+  description  = "Puerto inicial del rango publicado cuando expones puertos."
   type         = "number"
   default      = 15000
   mutable      = true
@@ -39,62 +48,17 @@ data "coder_parameter" "port_range_start" {
 
 data "coder_parameter" "port_range_end" {
   name         = "port_range_end"
-  display_name = "Port range end"
-  description  = "Puerto final del rango a exponer en el host (incluido)"
+  display_name = "Puerto final a exponer"
+  description  = "Puerto final (incluido) del rango publicado cuando expones puertos."
   type         = "number"
   default      = 15050
-  mutable      = true
-}
-
-data "coder_parameter" "enable_gpu" {
-  name         = "enable_gpu"
-  display_name = "Habilitar GPUs"
-  description  = "Permite exponer GPUs al contenedor (requiere host con GPU configurada)"
-  type         = "bool"
-  default      = false
-  mutable      = true
-}
-
-data "coder_parameter" "opencode_provider_url" {
-  name         = "opencode_provider_url"
-  display_name = "OpenCode provider URL (opcional)"
-  description  = "Base URL compatible con OpenAI (ej. https://api.tu-proveedor.com/v1). Dejar vacío para omitir config."
-  type         = "string"
-  default      = ""
-  mutable      = true
-}
-
-data "coder_parameter" "opencode_api_key" {
-  name         = "opencode_api_key"
-  display_name = "OpenCode API key (opcional)"
-  description  = "API key para el proveedor OpenAI compatible. Dejar vacío para omitir config."
-  type         = "string"
-  default      = ""
   mutable      = true
 }
 
 data "coder_parameter" "git_repo_url" {
   name         = "git_repo_url"
   display_name = "Repositorio Git (opcional)"
-  description  = "URL de Git para clonar en ~/projects/<repo> en el primer arranque"
-  type         = "string"
-  default      = ""
-  mutable      = true
-}
-
-data "coder_parameter" "docker_data_volume_name" {
-  name         = "docker_data_volume_name"
-  display_name = "Nombre volumen Docker data (opcional)"
-  description  = "Nombre del volumen nuevo para /var/lib/docker. Si se deja vacío usa el nombre por defecto del workspace."
-  type         = "string"
-  default      = ""
-  mutable      = true
-}
-
-data "coder_parameter" "docker_data_volume_existing" {
-  name         = "docker_data_volume_existing"
-  display_name = "Volumen Docker data existente (opcional)"
-  description  = "Usa un volumen existente para /var/lib/docker y evita crear uno nuevo. Dejar vacío para crear volumen."
+  description  = "URL para clonar en ~/projects/<repo> en el primer arranque."
   type         = "string"
   default      = ""
   mutable      = true
@@ -103,7 +67,7 @@ data "coder_parameter" "docker_data_volume_existing" {
 data "coder_parameter" "home_host_path" {
   name         = "home_host_path"
   display_name = "Ruta host para /home (opcional)"
-  description  = "Montar /home/coder desde una ruta del host en lugar de un volumen Docker. Dejar vacío para usar el volumen por defecto."
+  description  = "Monta /home/coder desde el host en lugar del volumen Docker persistente. Deja vacío para usar el volumen por defecto."
   type         = "string"
   default      = ""
   mutable      = true
@@ -112,7 +76,7 @@ data "coder_parameter" "home_host_path" {
 data "coder_parameter" "home_host_uid" {
   name         = "home_host_uid"
   display_name = "UID para /home host (opcional)"
-  description  = "UID de la carpeta de /home en el host (se usará como usuario del contenedor). Dejar vacío para usar el usuario coder."
+  description  = "UID de la carpeta /home en el host; se usará como usuario del contenedor. Deja vacío para usar el usuario coder."
   type         = "string"
   default      = ""
   mutable      = true
@@ -121,7 +85,7 @@ data "coder_parameter" "home_host_uid" {
 data "coder_parameter" "home_volume_name" {
   name         = "home_volume_name"
   display_name = "Nombre volumen /home (opcional)"
-  description  = "Nombre del volumen Docker para /home/coder cuando no se monta ruta host. Si se deja vacío se usa el nombre por defecto."
+  description  = "Nombre del volumen Docker para /home/coder cuando no montas ruta host. Si lo dejas vacío, usa el nombre por defecto."
   type         = "string"
   default      = ""
   mutable      = true
@@ -130,7 +94,7 @@ data "coder_parameter" "home_volume_name" {
 data "coder_parameter" "home_volume_existing" {
   name         = "home_volume_existing"
   display_name = "Volumen /home existente (opcional)"
-  description  = "Nombre de un volumen Docker ya creado para usarlo en /home/coder. Si se deja vacío se creará un volumen."
+  description  = "Volumen Docker ya creado para usarlo en /home/coder. Si lo dejas vacío se creará un volumen nuevo."
   type         = "string"
   default      = ""
   mutable      = true
@@ -139,7 +103,43 @@ data "coder_parameter" "home_volume_existing" {
 data "coder_parameter" "host_data_path" {
   name         = "host_data_path"
   display_name = "Ruta host para /home/coder/host-data (opcional)"
-  description  = "Montar una ruta del host en /home/coder/host-data dentro del contenedor. Dejar vacío para omitir."
+  description  = "Monta una ruta del host en /home/coder/host-data dentro del contenedor. Deja vacío para omitir."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "docker_data_volume_existing" {
+  name         = "docker_data_volume_existing"
+  display_name = "Volumen /var/lib/docker existente (opcional)"
+  description  = "Reutiliza un volumen ya creado para /var/lib/docker y evita crear uno nuevo."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "docker_data_volume_name" {
+  name         = "docker_data_volume_name"
+  display_name = "Nombre volumen /var/lib/docker (opcional)"
+  description  = "Nombre del volumen nuevo para /var/lib/docker. Si se deja vacío se usa el nombre por defecto del workspace."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "opencode_provider_url" {
+  name         = "opencode_provider_url"
+  display_name = "OpenCode: provider URL (opcional)"
+  description  = "Base URL compatible con OpenAI (ej. https://api.tu-proveedor.com/v1). Dejar vacío para omitir config."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
+data "coder_parameter" "opencode_api_key" {
+  name         = "opencode_api_key"
+  display_name = "OpenCode: API key (opcional)"
+  description  = "API key para el proveedor OpenAI compatible. Dejar vacío para omitir config."
   type         = "string"
   default      = ""
   mutable      = true
@@ -285,6 +285,20 @@ JSONCFG
       fi
 
       hash -r || true
+    fi
+
+    # --------------------------------------------------------------------------------
+    # Docker in Docker: preparar cgroup v2 para anidar contenedores con límites
+    # --------------------------------------------------------------------------------
+    if [ -f /sys/fs/cgroup/cgroup.controllers ]; then
+      echo ">> Enabling cgroup v2 delegation for DinD..."
+      sudo mkdir -p /sys/fs/cgroup/init
+      while ! {
+        sudo xargs -rn1 < /sys/fs/cgroup/cgroup.procs > /sys/fs/cgroup/init/cgroup.procs 2>/dev/null || true
+        sudo sh -c 'sed -e "s/ / +/g" -e "s/^/+/" < /sys/fs/cgroup/cgroup.controllers > /sys/fs/cgroup/cgroup.subtree_control'
+      }; do
+        sleep 0.1
+      done
     fi
 
     # --------------------------------------------------------------------------------
