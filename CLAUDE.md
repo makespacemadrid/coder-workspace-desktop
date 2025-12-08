@@ -4,7 +4,7 @@
 
 Este repositorio contiene imágenes Docker y templates de workspaces de Coder para Makers/Hackers de MakeSpace Madrid.
 
-**Lee primero `AGENTS.md`** para entender la arquitectura completa: imágenes disponibles, templates, flujo de publicación y notas operativas.
+**Lee primero `AGENTS.md` y `workspaces/README.md`** para entender imágenes, templates y flujo de publicación.
 
 ## Principios de trabajo
 
@@ -14,15 +14,15 @@ Este repositorio contiene imágenes Docker y templates de workspaces de Coder pa
 4. **Testing local**: Verifica builds y templates localmente cuando sea posible
 
 ## Estructura del proyecto
-
 ```
 Docker-Images/
-  Developer/Dockerfile    # Imagen para desarrollo
-  Designer/Dockerfile     # Imagen para diseño/CAD/electrónica
-.coder/templates/         # Templates de Coder
-.github/workflows/        # CI/CD (build y push a GHCR)
-AGENTS.md                 # Documentación principal (léela)
-AGENTS.private.md         # Instrucciones privadas (no versionado)
+  Developer/Dockerfile        # Imagen dev
+  Designer/Dockerfile         # Imagen diseño/CAD/EDA
+workspaces/                   # Templates de Coder y docs de cada uno
+watchtower/                   # Ejemplo de auto-actualización
+.github/workflows/            # CI/CD (build y push a GHCR)
+AGENTS.md                     # Guía principal (léela)
+AGENTS.private.md             # Notas privadas (gitignored)
 ```
 
 ## Flujo de trabajo
@@ -30,7 +30,7 @@ AGENTS.private.md         # Instrucciones privadas (no versionado)
 1. Cambios se hacen en branches
 2. Merge a `main` dispara build automático en GitHub Actions
 3. Imágenes se publican en `ghcr.io/makespacemadrid/coder-mks-{developer,design}:latest`
-4. Templates se actualizan con `coder templates push` (solo afecta nuevos workspaces)
+4. Tras cambios en templates, ejecuta `coder templates push` (solo afecta nuevos workspaces)
 
 ## Notas importantes
 
@@ -51,4 +51,4 @@ coder templates push Developer
 coder templates push Designer
 ```
 
-Consulta `AGENTS.md` para más detalles.
+Consulta `AGENTS.md` y `workspaces/README.md` para más detalles y UX de creación.

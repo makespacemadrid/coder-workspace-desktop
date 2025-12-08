@@ -22,6 +22,13 @@ tags: [docker, workspace, host, danger, makespace]
 - Pruebas que requieran Docker/Network del host, diagnósticos de red, acceso a GPUs del host.
 - Si no necesitas tocar el host, usa el template `Developer` (DinD) para más aislamiento.
 
+## Creación rápida en Coder
+- Usa esta plantilla solo cuando necesites acceso directo al host.
+- `Home`: monta `/home/coder` desde el host (añade UID si la carpeta no es 1000) o deja el volumen Docker por defecto. Puedes nombrarlo o reutilizar uno existente.
+- `host-data`: monta una ruta del host en `~/host-data` si necesitas compartir una carpeta concreta.
+- `Repositorio Git`: clona en `~/projects` al primer arranque.
+- `OpenCode`: configura URL/API key solo si quieres un proveedor OpenAI-compatible ya listo.
+
 ## Parámetros
 - `Ruta host para /home (opcional)`: monta `/home/coder` desde una carpeta del host en lugar de un volumen.
 - `UID para /home host (opcional)`: UID para ejecutar el contenedor cuando usas la ruta host, evitando problemas de permisos.
@@ -29,6 +36,7 @@ tags: [docker, workspace, host, danger, makespace]
 - `Volumen /home existente (opcional)`: nombre de un volumen ya creado para usarlo como `/home/coder` (no se crea uno nuevo).
 - `Ruta host para /home/coder/host-data (opcional)`: monta una carpeta del host dentro del home en `~/host-data`.
 - `Repositorio Git (opcional)`: URL para clonar en `~/projects/<nombre-del-repo>` en el primer arranque del workspace.
+- `OpenCode provider/API key (opcional)`: configura proveedor OpenAI-compatible al arrancar.
 
 ## Notas
 - El contenedor lleva labels `com.centurylinklabs.watchtower.*` para que Watchtower pueda actualizarlo si activas `--label-enable`.
