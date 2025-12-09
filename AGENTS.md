@@ -1,29 +1,32 @@
-# Plantillas de workspaces Coder
+# Guía rápida para agentes
 
-> Nota: puedes añadir un `AGENTS.private.md` (no versionado) con indicaciones privadas o específicas del entorno.
+Lee esto antes de tocar plantillas o imágenes. Para notas privadas, usa `AGENTS.private.md` (no versionado).
 
-## Imágenes
-- `ghcr.io/makespacemadrid/coder-mks-developer:latest` (build desde `Docker-Images/Developer/Dockerfile`). Incluye escritorio KDE/KasmVNC, Docker Engine, Node.js 20, CLIs de IA (Codex, Claude, Gemini), VS Code, GitHub Desktop, Claude Desktop, AppImage Pool, audio (PulseAudio/ALSA), Geany y tooling dev (Docker, gh, etc.).
-- `ghcr.io/makespacemadrid/coder-mks-design:latest` (build desde `Docker-Images/Designer/Dockerfile`). Enfoque en diseño 2D/3D y electrónica: Inkscape, GIMP, Krita, Blender, FreeCAD, OpenSCAD, PrusaSlicer, OrcaSlicer, MeshLab, LibreCAD, KiCad, Fritzing, SimulIDE, LaserGRBL (Wine), AppImage Pool, Geany.
+## Docs clave
+- Visión general del repo: `README.md`
+- Resumen de templates y flujos de creación: `workspaces/README.md`
+- Detalle de cada template: `workspaces/*/README.md`
+- Notas específicas para Claude: `CLAUDE.md`
+- Ejemplo de Watchtower: `watchtower/README.md`
 
-## Templates
-- `DeveloperAdvancedHost`: **DANGER DANGER, este workspace tiene acceso docker host y network host, usar con cuidado. Si no sabes lo que haces el template Developer es el que buscas.** Misma imagen developer, home persistente. Incluye VS Code, GitHub Desktop, Claude Desktop y AppImage Pool. Acceso gráfico vía KasmVNC (RDP solo aplica a workspaces Windows según [docs de Coder](https://coder.com/docs/user-guides/workspace-access/remote-desktops)).
-- `Developer`: Workspace de desarrollo general con Docker-in-Docker, volúmenes persistentes (`/home/coder`, `/var/lib/docker`), GPUs opcionales, red bridge. Misma imagen developer. Acceso gráfico vía KasmVNC.
-- `Designer`: escritorio KDE/KasmVNC con herramientas de diseño; GPUs opcionales; home persistente; AppImage Pool y módulos Filebrowser/OpenCode. KasmVNC para escritorio (RDP no aplica a esta imagen Linux).
+## Imágenes base
+- `ghcr.io/makespacemadrid/coder-mks-developer:latest` (Docker-Images/Developer/Dockerfile): escritorio KDE/KasmVNC, Docker Engine, Node.js 20, CLIs de IA (Codex, Claude, Gemini), VS Code, GitHub Desktop, Claude Desktop, AppImage Pool, audio (PulseAudio/ALSA), Geany y tooling dev (Docker, gh, etc.).
+- `ghcr.io/makespacemadrid/coder-mks-design:latest` (Docker-Images/Designer/Dockerfile): stack de diseño 2D/3D y electrónica (Inkscape, GIMP, Krita, Blender, FreeCAD, OpenSCAD, PrusaSlicer, OrcaSlicer, MeshLab, LibreCAD, KiCad, Fritzing, SimulIDE, LaserGRBL via Wine) + AppImage Pool y Geany.
 
-## Notas operativas
-Todos los contenedores llevan labels `com.centurylinklabs.watchtower.*` para que Watchtower pueda actualizarlos si se despliega con `--label-enable` + `--scope coder-workspaces`.
+## Templates Coder
+- `Developer` (DinD): workspace general con Docker-in-Docker y GPUs opcionales; volúmenes persistentes `/home/coder` y `/var/lib/docker`; red bridge. Escritorio via KasmVNC.
+- `DeveloperAdvancedHost`: **DANGER** acceso directo a Docker y red del host. Usa `Developer` si no necesitas tocar el host. Escritorio vía KasmVNC.
+- `Designer`: escritorio KDE/KasmVNC con herramientas de diseño/CAD/EDA; GPUs opcionales; home persistente; módulos Filebrowser/OpenCode. RDP aplica solo a workspaces Windows según [la guía de Coder](https://coder.com/docs/user-guides/workspace-access/remote-desktops).
+- `DeveloperBasic`: sin escritorio; code-server + Docker-in-Docker ligeros.
 
-## Publicación
-Tras modificar imagen o templates:
-1) Merge en `main`.
-2) GH Actions (`.github/workflows/build.yml`) construye y publica la imagen en GHCR con tag `latest` y `sha`.
-3) Ejecuta `coder templates push` desde el repo para actualizar los templates en Coder (solo aplica a nuevos workspaces).
+## Publicar cambios
+1) Merge a `main`.
+2) GitHub Actions ( `.github/workflows/build.yml` ) construye y publica imágenes en GHCR con tags `latest` y `sha`.
+3) Ejecuta `coder templates push` tras el merge para actualizar los templates en Coder (afecta solo a nuevos workspaces).
 
-## Watchtower
-- Las imágenes y contenedores vienen etiquetados para `watchtower` (`--label-enable`, scope `coder-workspaces`).
-- Ejemplo de despliegue en `watchtower/docker-compose.yml` (busca updates cada 6h e incluye un servicio de muestra).
+## Operativa y mantenimiento
+- Todos los contenedores llevan labels `com.centurylinklabs.watchtower.*` para actualizaciones automáticas si lanzas Watchtower con `--label-enable` y `--scope coder-workspaces`.
+- Hay un `docker-compose` de ejemplo en `watchtower/docker-compose.yml` (cron de 6h y servicio de muestra).
 
-## Instrucciones locales / sensibles
-- No incluyas endpoints, hosts ni credenciales en este archivo. Usa `AGENTS.private.md` (gitignore) para instrucciones locales o con datos sensibles del entorno/producción.
-- Mantén `AGENTS.private.md` actualizado con cualquier flujo de actualización manual o accesos específicos de un host.
+## Instrucciones sensibles
+- No añadas endpoints ni credenciales aquí. Documenta accesos locales o pasos específicos del host en `AGENTS.private.md` (está en `.gitignore`) y mantenlo actualizado.

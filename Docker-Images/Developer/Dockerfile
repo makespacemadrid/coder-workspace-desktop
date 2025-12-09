@@ -225,5 +225,9 @@ RUN set -e; \
     chmod +x /etc/skel/Desktop/*.desktop || true
 
 ENV PIPX_HOME=/opt/pipx \
-    PIPX_BIN_DIR=/usr/local/bin \
-    PATH="/usr/local/bin:${PATH}"
+    PIPX_BIN_DIR=/opt/pipx/bin \
+    PATH="/opt/pipx/bin:/usr/local/bin:${PATH}"
+
+# Crear directorios de pipx y dar permisos al usuario coder (UID 1000)
+RUN mkdir -p /opt/pipx /opt/pipx/bin && \
+    chown -R 1000:1000 /opt/pipx
