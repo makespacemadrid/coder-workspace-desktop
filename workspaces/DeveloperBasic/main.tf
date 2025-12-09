@@ -48,6 +48,10 @@ resource "coder_agent" "main" {
     sudo mkdir -p /home/coder
     sudo chown "$USER:$USER" /home/coder || true
 
+    # Asegurar permisos de pipx para el usuario actual
+    sudo mkdir -p /opt/pipx /opt/pipx/bin
+    sudo chown -R "$USER:$USER" /opt/pipx || true
+
     # Inicializar /etc/skel la primera vez
     if [ ! -f ~/.init_done ]; then
       cp -rT /etc/skel ~ || true

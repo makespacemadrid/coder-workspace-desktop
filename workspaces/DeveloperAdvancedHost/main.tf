@@ -143,6 +143,10 @@ PULSECFG
     sudo mkdir -p /home/coder
     sudo chown "$USER:$USER" /home/coder || true
 
+    # Asegurar permisos de pipx para el usuario actual
+    sudo mkdir -p /opt/pipx /opt/pipx/bin
+    sudo chown -R "$USER:$USER" /opt/pipx || true
+
     # Symlink de opencode cuando se instale bajo /root (start script espera /home/coder/.opencode)
     if [ -d /root/.opencode ] && [ ! -e /home/coder/.opencode ]; then
       sudo ln -s /root/.opencode /home/coder/.opencode || true

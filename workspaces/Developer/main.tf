@@ -15,6 +15,8 @@ variable "docker_socket" {
   type        = string
 }
 
+
+
 # ================================
 #   Parámetros visibles en Coder
 # ================================
@@ -145,6 +147,16 @@ data "coder_parameter" "opencode_api_key" {
   mutable      = true
 }
 
+data "coder_parameter" "claude_token" {
+  name         = "claude_token"
+  display_name = "ClaudeToken"
+  description  = "Generate one using `claude setup-token` command"
+  type         = "string"
+  default      = ""
+
+  mutable      = true
+}
+
 locals {
   username        = data.coder_workspace_owner.me.name
   workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
@@ -209,6 +221,10 @@ PULSECFG
     sudo mkdir -p /home/coder
     sudo chown "$USER:$USER" /home/coder || true
 
+    # Asegurar permisos de pipx para el usuario actual
+    sudo mkdir -p /opt/pipx /opt/pipx/bin
+    sudo chown -R "$USER:$USER" /opt/pipx || true
+
     # Symlink de opencode cuando se instale bajo /root (start script espera /home/coder/.opencode)
     if [ -d /root/.opencode ] && [ ! -e /home/coder/.opencode ]; then
       sudo ln -s /root/.opencode /home/coder/.opencode || true
@@ -221,6 +237,7 @@ PULSECFG
         sudo ln -sf "$path" /home/coder/.local/bin/jupyter-lab || true
       fi
     done
+    sudo chown -R "$USER:$USER" /home/coder/.local || true
 
     # Inicializar /etc/skel la primera vez
     if [ ! -f ~/.init_done ]; then
@@ -249,22 +266,31 @@ PULSECFG
     fi
 
     # Config inicial de OpenCode (opcional)
-    if [ -n "$${OPENCODE_PROVIDER_URL:-}" ] && [ -n "$${OPENCODE_API_KEY:-}" ]; then
+    if [ -n "$${OPENCODE_API_KEY:-}" ]; then
       mkdir -p /home/coder/.opencode
       cat > /home/coder/.opencode/config.json <<'JSONCFG'
 {
-  "providers": [
-    {
-      "name": "custom",
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "litellm_mks": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "MakeSpace IA",
+      "api_key": "OPENCODE_API_KEY_VALUE",
       "type": "openai",
-      "base_url": "OPENCODE_PROVIDER_URL_VALUE",
-      "api_key": "OPENCODE_API_KEY_VALUE"
+      "baseURL": "https://iapi.mksmad.org",
+      "models": {
+        "devstral:24b": { "name": "Devstral 24b" },
+        "qwen2.5-coder:14b": { "name": "Qwen2.5 Coder 14b" },
+        "qwen2.5-coder:7b": { "name": "Qwen2.5 Coder 7b" },
+        "qwen3-coder:30b": { "name": "Qwen3 Coder 30b" },
+        "gpt-oss:20b": { "name": "GPT-OSS 20b" },
+        "magistral:24b": { "name": "Magistral 24b" },
+        "mistral-small3.1:24b": { "name": "Mistral Small3.1 24b" }
+      }
     }
-  ],
-  "default_provider": "custom"
+  }
 }
 JSONCFG
-      sed -i "s|OPENCODE_PROVIDER_URL_VALUE|$${OPENCODE_PROVIDER_URL}|g" /home/coder/.opencode/config.json
       sed -i "s|OPENCODE_API_KEY_VALUE|$${OPENCODE_API_KEY}|g" /home/coder/.opencode/config.json
       chown -R "$USER:$USER" /home/coder/.opencode || true
     fi
@@ -470,7 +496,21 @@ module "opencode" {
   version  = "0.1.1"
   agent_id = coder_agent.main.id
   workdir  = "/home/coder/"
-  user     = "coder"
+}
+
+module "claude-code" {
+  source                  = "registry.coder.com/coder/claude-code/coder"
+  version                 = "4.2.3"
+  agent_id                = coder_agent.main.id
+  workdir                 = "/home/coder/project"
+  claude_code_oauth_token = data.coder_parameter.claude_token.value
+}
+
+module "jupyterlab" {
+  count    = data.coder_workspace.me.start_count
+  source   = "registry.coder.com/coder/jupyterlab/coder"
+  version  = "1.2.1"
+  agent_id = coder_agent.main.id
 }
 
 # ---------------------------------------------------------------
