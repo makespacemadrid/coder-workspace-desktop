@@ -268,16 +268,17 @@ PULSECFG
     # Config inicial de OpenCode (opcional)
     if [ -n "$${OPENCODE_API_KEY:-}" ]; then
       mkdir -p /home/coder/.opencode
-      cat > /home/coder/.opencode/config.json <<'JSONCFG'
+      cat > /home/coder/.opencode/opencode.json <<'JSONCFG'
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "litellm_mks": {
+    "litellm": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "MakeSpace IA",
-      "api_key": "OPENCODE_API_KEY_VALUE",
-      "type": "openai",
-      "baseURL": "https://iapi.mksmad.org",
+      "options": {
+        "baseURL": "https://iapi.mksmad.org",
+        "api_key": "OPENCODE_API_KEY_VALUE"
+      },
       "models": {
         "devstral:24b": { "name": "Devstral 24b" },
         "qwen2.5-coder:14b": { "name": "Qwen2.5 Coder 14b" },
@@ -291,7 +292,7 @@ PULSECFG
   }
 }
 JSONCFG
-      sed -i "s|OPENCODE_API_KEY_VALUE|$${OPENCODE_API_KEY}|g" /home/coder/.opencode/config.json
+      sed -i "s|OPENCODE_API_KEY_VALUE|$${OPENCODE_API_KEY}|g" /home/coder/.opencode/opencode.json
       chown -R "$USER:$USER" /home/coder/.opencode || true
     fi
 
@@ -424,6 +425,23 @@ JSONCFG
 # MÓDULOS DE CODER
 # ---------------------------------------------------------------
 
+# Script de preparación de pipx (debe ejecutarse antes de jupyterlab)
+resource "coder_script" "setup_pipx" {
+  agent_id           = coder_agent.main.id
+  display_name       = "Setup pipx environment"
+  icon               = "/icon/folder.svg"
+  script             = <<-EOT
+    #!/bin/bash
+    set -e
+    # Asegurar que /opt/pipx existe con permisos correctos
+    sudo mkdir -p /opt/pipx /opt/pipx/bin
+    sudo chown -R coder:coder /opt/pipx || true
+    echo "✓ pipx environment ready"
+  EOT
+  run_on_start       = true
+  start_blocks_login = false
+}
+
 module "code-server" {
   count    = data.coder_workspace.me.start_count
   source   = "registry.coder.com/coder/code-server/coder"
@@ -507,10 +525,11 @@ module "claude-code" {
 }
 
 module "jupyterlab" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/jupyterlab/coder"
-  version  = "1.2.1"
-  agent_id = coder_agent.main.id
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/jupyterlab/coder"
+  version    = "1.2.1"
+  agent_id   = coder_agent.main.id
+  depends_on = [coder_script.setup_pipx]
 }
 
 # ---------------------------------------------------------------
