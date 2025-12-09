@@ -229,5 +229,5 @@ ENV PIPX_HOME=/opt/pipx \
     PATH="/opt/pipx/bin:/usr/local/bin:${PATH}"
 
 # Crear directorios de pipx y dar permisos al usuario coder (UID 1000)
-RUN mkdir -p /opt/pipx /opt/pipx/bin && \
+RUN mkdir -p /opt/pipx /opt/pipx/bin /opt/pipx/venvs && \
     chown -R 1000:1000 /opt/pipx
