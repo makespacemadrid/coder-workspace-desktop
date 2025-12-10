@@ -1,6 +1,6 @@
 ---
 display_name: Developer
-description: "Workspace de desarrollo general con Docker in Docker y GPU opcional"
+description: "Workspace de desarrollo general con Docker in Docker y GPU opcional (autoprovisiona key MakeSpace de IA si no rellenas OpenCode)"
 icon: icon.svg
 maintainer_github: makespacemadrid
 tags: [docker, dind, gpu, workspace, makespace]
@@ -32,7 +32,7 @@ Workspace de desarrollo general con **Docker in Docker (DinD)** y escritorio KDE
   - `Ruta host para ~/host-data` monta una carpeta puntual del host dentro del home.
 - `Docker data`: nombra o reutiliza el volumen de `/var/lib/docker` si quieres compartirlo.
 - `Repositorio Git` clona en `~/projects` al primer arranque.
-- `OpenCode` (URL/API key) solo si necesitas configurar un proveedor OpenAI-compatible de inicio.
+- `OpenCode` (URL/API key): si lo dejas vacío, se autoprovisiona una key de IA MakeSpace válida 30 días (`http://iapi.mksmad.org`).
 
 ## Notas de uso
 - El daemon Docker se arranca dentro del contenedor (`dockerd` con overlay2) y guarda datos en `/var/lib/docker`.

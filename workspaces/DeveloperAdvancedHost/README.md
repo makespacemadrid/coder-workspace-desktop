@@ -1,6 +1,6 @@
 ---
 display_name: DeveloperAdvancedHost
-description: "DANGER DANGER: acceso Docker host + network host. Usa Developer si no necesitas esto."
+description: "DANGER DANGER: acceso Docker host + network host. Usa Developer si no necesitas esto. Autoprovisiona key IA MakeSpace si no rellenas OpenCode."
 icon: icon.svg
 maintainer_github: makespacemadrid
 tags: [docker, workspace, host, danger, makespace]
@@ -27,7 +27,7 @@ tags: [docker, workspace, host, danger, makespace]
 - `Home`: monta `/home/coder` desde el host (añade UID si la carpeta no es 1000) o deja el volumen Docker por defecto. Puedes nombrarlo o reutilizar uno existente.
 - `host-data`: monta una ruta del host en `~/host-data` si necesitas compartir una carpeta concreta.
 - `Repositorio Git`: clona en `~/projects` al primer arranque.
-- `OpenCode`: configura URL/API key solo si quieres un proveedor OpenAI-compatible ya listo.
+- `OpenCode`: si lo dejas vacío, se autoprovisiona una key de IA MakeSpace válida 30 días (`http://iapi.mksmad.org`).
 
 ## Parámetros
 - `Ruta host para /home (opcional)`: monta `/home/coder` desde una carpeta del host en lugar de un volumen.

@@ -1,6 +1,6 @@
 ---
 display_name: MakeSpace Designer
-description: Entorno gráfico para diseño 2D/3D y electrónica
+description: Entorno gráfico para diseño 2D/3D y electrónica (autoprovisiona key IA MakeSpace si no rellenas OpenCode)
 icon: icon.svg
 maintainer_github: makespacemadrid
 tags: [design, cad, 3d, electronics, makespace]
@@ -24,7 +24,7 @@ Template con escritorio KDE/KasmVNC y herramientas de diseño 2D/3D + electróni
 - `Home`: usa volumen Docker por defecto o monta `/home/coder` desde el host (añade UID si no es 1000). Puedes reutilizar o nombrar el volumen.
 - `host-data`: monta una ruta concreta del host en `~/host-data` si necesitas intercambiar archivos puntuales.
 - `Repositorio Git`: clona en `~/projects` al primer arranque.
-- `OpenCode`: añade URL/API key solo si quieres un proveedor OpenAI-compatible preconfigurado.
+- `OpenCode`: si lo dejas vacío, se autoprovisiona una key de IA MakeSpace válida 30 días (`http://iapi.mksmad.org`).
 
 ## Notas
 - Home persistente en volumen Docker (`/home/coder`). Escritorio con accesos directos a las apps clave.

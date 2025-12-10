@@ -132,7 +132,7 @@ data "coder_parameter" "docker_data_volume_name" {
 data "coder_parameter" "opencode_provider_url" {
   name         = "opencode_provider_url"
   display_name = "OpenCode: provider URL (opcional)"
-  description  = "Base URL compatible con OpenAI (ej. https://api.tu-proveedor.com/v1). Dejar vacío para omitir config."
+  description  = "Base URL compatible con OpenAI (ej. https://api.tu-proveedor.com/v1). Si lo dejas vacío se usa http://iapi.mksmad.org y se autoprovisiona una key MakeSpace (30 días)."
   type         = "string"
   default      = ""
   mutable      = true
@@ -141,7 +141,7 @@ data "coder_parameter" "opencode_provider_url" {
 data "coder_parameter" "opencode_api_key" {
   name         = "opencode_api_key"
   display_name = "OpenCode: API key (opcional)"
-  description  = "API key para el proveedor OpenAI compatible. Dejar vacío para omitir config."
+  description  = "API key para el proveedor OpenAI compatible. Si la dejas vacía se generará una llave MakeSpace válida 30 días."
   type         = "string"
   default      = ""
   mutable      = true
@@ -179,6 +179,13 @@ locals {
     local.data_volume_name != "" ? local.data_volume_name : null,
     "coder-${data.coder_workspace.me.id}-docker-data"
   )
+  vscode_extensions = [
+    "anthropic.claude-code",
+    "opencodeai.opencode",
+    "google.gemini-code-assistant",
+    "qwen-team.qwen-vscode",
+    "openai.openai"
+  ]
 }
 
 provider "docker" {
@@ -265,13 +272,323 @@ PULSECFG
       echo 'if [ -f "$HOME/.venvs/base/bin/activate" ]; then source "$HOME/.venvs/base/bin/activate"; fi' >> "$HOME/.bashrc"
     fi
 
+    # Autoprovisionar clave OpenCode MakeSpace si falta
+    if [ -z "$${OPENCODE_PROVIDER_URL:-}" ]; then
+      OPENCODE_PROVIDER_URL="http://iapi.mksmad.org"
+      export OPENCODE_PROVIDER_URL
+    fi
+    if [ -z "$${OPENCODE_API_KEY:-}" ]; then
+      KEY_ENDPOINT="https://prod8n.mksmad.org/webhook/94b9b71a-dc18-4c69-88d6-5b02100bf577"
+      alias="coder-$(tr -dc 0-9 </dev/urandom 2>/dev/null | head -c 8 | sed 's/^$/00000000/')"
+      payload=$(printf '{"email":"%s","alias":"%s"}' "$${CODER_USER_EMAIL:-}" "$alias")
+      resp=$(curl -fsSL -X POST "$KEY_ENDPOINT" -H "Content-Type: application/json" -d "$payload" 2>/dev/null || true)
+      key=$(printf '%s' "$resp" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("key",""))' 2>/dev/null || true)
+      if [ -n "$key" ]; then
+        OPENCODE_API_KEY="$key"
+        export OPENCODE_API_KEY
+        mkdir -p /home/coder/.opencode
+        printf "%s" "$key" > /home/coder/.opencode/.latest_mks_key || true
+        printf "%s" "$payload" > /home/coder/.opencode/.latest_mks_request || true
+      fi
+    fi
+
+    # Script para regenerar y aplicar nueva key de MakeSpace
+    sudo tee /usr/local/bin/gen_mks_litellm_key >/dev/null <<'GENMKS'
+#!/usr/bin/env bash
+set -euo pipefail
+KEY_ENDPOINT="https://prod8n.mksmad.org/webhook/94b9b71a-dc18-4c69-88d6-5b02100bf577"
+PROVIDER="${OPENCODE_PROVIDER_URL:-http://iapi.mksmad.org}"
+EMAIL="${CODER_USER_EMAIL:-}"
+alias="coder-$(tr -dc 0-9 </dev/urandom 2>/dev/null | head -c 8 | sed 's/^$/00000000/')"
+if [ -z "$EMAIL" ]; then
+  echo "Falta CODER_USER_EMAIL para solicitar la key" >&2
+  exit 1
+fi
+payload=$(printf '{"email":"%s","alias":"%s"}' "$EMAIL" "$alias")
+resp=$(curl -fsSL -X POST "$KEY_ENDPOINT" -H "Content-Type: application/json" -d "$payload")
+key=$(printf '%s' "$resp" | python3 - <<'PY'
+import json,sys
+try:
+  print(json.load(sys.stdin).get("key",""))
+except Exception:
+  print("")
+PY
+)
+if [ -z "$key" ]; then
+  echo "No se obtuvo key de MakeSpace" >&2
+  exit 1
+fi
+export OPENCODE_API_KEY="$key"
+export OPENCODE_PROVIDER_URL="$PROVIDER"
+mkdir -p /home/coder/.opencode
+printf "%s" "$key" > /home/coder/.opencode/.latest_mks_key || true
+printf "%s" "$payload" > /home/coder/.opencode/.latest_mks_request || true
+python3 - <<'PY'
+import json,os
+path="/home/coder/.opencode/opencode.json"
+data={}
+if os.path.exists(path):
+  try:
+    with open(path) as f:
+      data=json.load(f)
+  except Exception:
+    data={}
+prov=data.setdefault("provider",{}).setdefault("custom",{}).setdefault("options",{})
+prov["baseURL"]=os.environ.get("OPENCODE_PROVIDER_URL","http://iapi.mksmad.org")
+prov["apiKey"]=os.environ.get("OPENCODE_API_KEY","")
+data.setdefault("default_provider","custom")
+os.makedirs(os.path.dirname(path),exist_ok=True)
+with open(path,"w") as f:
+  json.dump(data,f,indent=2)
+PY
+ln -sf /home/coder/.opencode/opencode.json /home/coder/.opencode/config.json || true
+echo "Nueva key guardada y aplicada"
+GENMKS
+    sudo chmod +x /usr/local/bin/gen_mks_litellm_key || true
+
+    # Sembrar extensiones en VS Code Server (para conexiones remotas)
+    if [ -n "$${VSCODE_EXTENSIONS:-}" ]; then
+      mkdir -p "$HOME/.vscode-server/extensions"
+      for server_bin in "$HOME"/.vscode-server/bin/*/bin/code-server; do
+        if [ -x "$server_bin" ]; then
+          for ext in $${VSCODE_EXTENSIONS}; do
+            "$server_bin" --install-extension "$ext" --force --extensions-dir "$HOME/.vscode-server/extensions" || true
+          done
+        fi
+      done
+    fi
+
     # Config inicial de OpenCode (opcional)
     if [ -n "$${OPENCODE_API_KEY:-}" ]; then
       mkdir -p /home/coder/.opencode
       cat > /home/coder/.opencode/opencode.json <<'JSONCFG'
 {
   "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "opencode-openai-codex-auth@4.0.2"
+  ],
   "provider": {
+    "openai": {
+      "options": {
+        "reasoningEffort": "medium",
+        "reasoningSummary": "auto",
+        "textVerbosity": "medium",
+        "include": [
+          "reasoning.encrypted_content"
+        ],
+        "store": false
+      },
+      "models": {
+        "gpt-5.1-codex-low": {
+          "name": "GPT 5.1 Codex Low (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "low",
+            "reasoningSummary": "auto",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-medium": {
+          "name": "GPT 5.1 Codex Medium (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "medium",
+            "reasoningSummary": "auto",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-high": {
+          "name": "GPT 5.1 Codex High (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "high",
+            "reasoningSummary": "detailed",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-max": {
+          "name": "GPT 5.1 Codex Max (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "high",
+            "reasoningSummary": "detailed",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-max-low": {
+          "name": "GPT 5.1 Codex Max Low (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "low",
+            "reasoningSummary": "detailed",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-max-medium": {
+          "name": "GPT 5.1 Codex Max Medium (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "medium",
+            "reasoningSummary": "detailed",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-max-high": {
+          "name": "GPT 5.1 Codex Max High (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "high",
+            "reasoningSummary": "detailed",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-max-xhigh": {
+          "name": "GPT 5.1 Codex Max Extra High (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "xhigh",
+            "reasoningSummary": "detailed",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-mini-medium": {
+          "name": "GPT 5.1 Codex Mini Medium (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "medium",
+            "reasoningSummary": "auto",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-codex-mini-high": {
+          "name": "GPT 5.1 Codex Mini High (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "high",
+            "reasoningSummary": "detailed",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-low": {
+          "name": "GPT 5.1 Low (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "low",
+            "reasoningSummary": "auto",
+            "textVerbosity": "low",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-medium": {
+          "name": "GPT 5.1 Medium (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "medium",
+            "reasoningSummary": "auto",
+            "textVerbosity": "medium",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        },
+        "gpt-5.1-high": {
+          "name": "GPT 5.1 High (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "options": {
+            "reasoningEffort": "high",
+            "reasoningSummary": "detailed",
+            "textVerbosity": "high",
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "store": false
+          }
+        }
+      }
+    },
     "litellm": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "MakeSpace IA",
@@ -357,6 +674,8 @@ JSONCFG
     HOME                = "/home/coder"
     OPENCODE_PROVIDER_URL = data.coder_parameter.opencode_provider_url.value
     OPENCODE_API_KEY      = data.coder_parameter.opencode_api_key.value
+    CODER_USER_EMAIL      = data.coder_workspace_owner.me.email
+    VSCODE_EXTENSIONS     = join(" ", local.vscode_extensions)
   }
 
   metadata {
@@ -447,6 +766,7 @@ module "code-server" {
   source   = "registry.coder.com/coder/code-server/coder"
   version  = "~> 1.0"
   agent_id = coder_agent.main.id
+  extensions = local.vscode_extensions
   order    = 1
 }
 

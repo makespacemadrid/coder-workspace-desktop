@@ -165,6 +165,14 @@ TARGET_BIN=/usr/share/claude-desktop/claude-desktop EXTRA_FLAGS="--disable-gpu" 
 TARGET_BIN=/usr/share/code/bin/code EXTRA_FLAGS="" wrap /usr/bin/code /usr/share/code/bin/code
 EOSH
 
+# Extensiones VS Code preinstaladas para escritorio/remoto
+RUN su - coder -c 'set -e; \
+  EXT_LIST="anthropic.claude-code opencodeai.opencode google.gemini-code-assistant qwen-team.qwen-vscode openai.openai"; \
+  for ext in $EXT_LIST; do \
+    code --install-extension "$ext" --force --user-data-dir /home/coder/.vscode/data --extensions-dir /home/coder/.vscode/extensions || true; \
+  done; \
+  mkdir -p /home/coder/.vscode-server/extensions'
+
 # AppImage Pool (gestor de AppImages con actualizaciones e integración en menú)
 ARG APPIMAGEPOOL_VERSION=5.0.0
 RUN <<'EOSH'

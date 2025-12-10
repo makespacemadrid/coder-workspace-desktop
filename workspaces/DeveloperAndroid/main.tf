@@ -15,6 +15,25 @@ variable "docker_socket" {
   type        = string
 }
 
+# Parámetros
+data "coder_parameter" "enable_gpu" {
+  name         = "enable_gpu"
+  display_name = "GPU (si disponible)"
+  description  = "Activa --gpus all en el contenedor; solo si el nodo tiene GPU configurada."
+  type         = "bool"
+  default      = false
+  mutable      = true
+}
+
+data "coder_parameter" "git_repo_url" {
+  name         = "git_repo_url"
+  display_name = "Repositorio Git (opcional)"
+  description  = "URL para clonar en ~/projects/<repo> en el primer arranque."
+  type         = "string"
+  default      = ""
+  mutable      = true
+}
+
 data "coder_parameter" "home_host_path" {
   name         = "home_host_path"
   display_name = "Ruta host para /home (opcional)"
@@ -60,16 +79,6 @@ data "coder_parameter" "host_data_path" {
   mutable      = true
 }
 
-data "coder_parameter" "git_repo_url" {
-  name         = "git_repo_url"
-  display_name = "Repositorio Git (opcional)"
-  description  = "URL para clonar en ~/projects/<repo> en el primer arranque."
-  type         = "string"
-  default      = ""
-  mutable      = true
-}
-
-# Parámetros opcionales para OpenCode
 data "coder_parameter" "opencode_provider_url" {
   name         = "opencode_provider_url"
   display_name = "OpenCode: provider URL (opcional)"
@@ -90,7 +99,8 @@ data "coder_parameter" "opencode_api_key" {
 
 locals {
   username        = data.coder_workspace_owner.me.name
-  workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
+  workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer-android:latest"
+  enable_gpu      = data.coder_parameter.enable_gpu.value
   home_host_path  = trimspace(data.coder_parameter.home_host_path.value)
   home_host_uid   = trimspace(data.coder_parameter.home_host_uid.value)
   host_data_path  = trimspace(data.coder_parameter.host_data_path.value)
@@ -106,7 +116,8 @@ locals {
     "opencodeai.opencode",
     "google.gemini-code-assistant",
     "qwen-team.qwen-vscode",
-    "openai.openai"
+    "openai.openai",
+    "ms-vscode.cpptools"
   ]
 }
 
@@ -141,7 +152,6 @@ daemon-binary = /usr/bin/pulseaudio
 enable-shm = false
 PULSECFG
     fi
-    # Iniciar PulseAudio si no está corriendo
     if ! pgrep -u "$USER" pulseaudio >/dev/null 2>&1; then
       pulseaudio --start --exit-idle-time=-1 || true
     fi
@@ -149,23 +159,6 @@ PULSECFG
     # Asegurar /home/coder como HOME efectivo incluso si se ejecuta como root
     sudo mkdir -p /home/coder
     sudo chown "$USER:$USER" /home/coder || true
-
-    # Asegurar permisos de pipx para el usuario actual
-    sudo mkdir -p /opt/pipx /opt/pipx/bin
-    sudo chown -R "$USER:$USER" /opt/pipx || true
-
-    # Symlink de opencode cuando se instale bajo /root (start script espera /home/coder/.opencode)
-    if [ -d /root/.opencode ] && [ ! -e /home/coder/.opencode ]; then
-      sudo ln -s /root/.opencode /home/coder/.opencode || true
-    fi
-
-    # Alinear binarios instalados como root (ej. jupyter)
-    sudo mkdir -p /home/coder/.local/bin
-    for path in /root/.local/bin/jupyter-lab /usr/local/bin/jupyter-lab; do
-      if [ -x "$path" ] && [ ! -e /home/coder/.local/bin/jupyter-lab ]; then
-        sudo ln -sf "$path" /home/coder/.local/bin/jupyter-lab || true
-      fi
-    done
 
     # Inicializar /etc/skel la primera vez
     if [ ! -f ~/.init_done ]; then
@@ -175,23 +168,13 @@ PULSECFG
 
     # Refrescar accesos directos en el escritorio (si faltan)
     mkdir -p ~/Desktop
-    for f in code.desktop github-desktop.desktop claude-desktop.desktop firefox.desktop geany.desktop appimagepool.desktop; do
+    for f in code.desktop firefox.desktop; do
       src="/usr/share/applications/$f"
       if [ -f "$src" ] && [ ! -e "$HOME/Desktop/$f" ]; then
         ln -sf "$src" "$HOME/Desktop/$f"
       fi
     done
     chmod +x ~/Desktop/*.desktop 2>/dev/null || true
-
-    # Entorno virtual de Python listo para usar
-    mkdir -p "$HOME/.venvs"
-    if [ ! -d "$HOME/.venvs/base" ]; then
-      python3 -m venv "$HOME/.venvs/base" || true
-      "$HOME/.venvs/base/bin/pip" install --upgrade pip setuptools wheel || true
-    fi
-    if ! grep -q "source \\$HOME/.venvs/base/bin/activate" "$HOME/.bashrc" 2>/dev/null; then
-      echo 'if [ -f "$HOME/.venvs/base/bin/activate" ]; then source "$HOME/.venvs/base/bin/activate"; fi' >> "$HOME/.bashrc"
-    fi
 
     # Autoprovisionar clave OpenCode MakeSpace si falta
     if [ -z "$${OPENCODE_PROVIDER_URL:-}" ]; then
@@ -526,24 +509,6 @@ JSONCFG
       ln -sf /home/coder/.opencode/opencode.json /home/coder/.opencode/config.json || true
       chown -R "$USER:$USER" /home/coder/.opencode || true
     fi
-
-    # --------------------------------------------------------------------------------
-    # UV: instalador universal para CLIs Python (opcional)
-    # --------------------------------------------------------------------------------
-    if ! command -v uv >/dev/null 2>&1; then
-      echo ">> Installing uv (Python package/CLI installer)..."
-      curl -LsSf https://astral.sh/uv/install.sh | sh || true
-
-      # Intentar dejar uv en el PATH del sistema
-      if [ -f "/root/.local/bin/uv" ]; then
-        sudo ln -sf /root/.local/bin/uv /usr/local/bin/uv || true
-      fi
-      if [ -f "$HOME/.local/bin/uv" ]; then
-        sudo ln -sf "$HOME/.local/bin/uv" /usr/local/bin/uv || true
-      fi
-
-      hash -r || true
-    fi
   EOT
 
   env = {
@@ -581,56 +546,16 @@ JSONCFG
     interval     = 60
     timeout      = 1
   }
-
-  metadata {
-    display_name = "CPU Usage (Host)"
-    key          = "4_cpu_usage_host"
-    script       = "coder stat cpu --host"
-    interval     = 10
-    timeout      = 1
-  }
-
-  metadata {
-    display_name = "Memory Usage (Host)"
-    key          = "5_mem_usage_host"
-    script       = "coder stat mem --host"
-    interval     = 10
-    timeout      = 1
-  }
-
-  metadata {
-    display_name = "Load Average (Host)"
-    key          = "6_load_host"
-    script       = <<EOT
-      echo "`cat /proc/loadavg | awk '{ print $1 }'` `nproc`" | \
-      awk '{ printf "%0.2f", $1/$2 }'
-    EOT
-    interval     = 60
-    timeout      = 1
-  }
-
-  metadata {
-    display_name = "Swap Usage (Host)"
-    key          = "7_swap_host"
-    script       = <<EOT
-      free -b | awk '/^Swap/ { printf("%.1f/%.1f", $3/1024/1024/1024, $2/1024/1024/1024) }'
-    EOT
-    interval     = 10
-    timeout      = 1
-  }
 }
 
-# ---------------------------------------------------------------
-# MÓDULOS DE CODER
-# ---------------------------------------------------------------
-
+# Módulos
 module "code-server" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/code-server/coder"
-  version  = "~> 1.0"
-  agent_id = coder_agent.main.id
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/code-server/coder"
+  version    = "~> 1.0"
+  agent_id   = coder_agent.main.id
   extensions = local.vscode_extensions
-  order    = 1
+  order      = 1
 }
 
 module "git-config" {
@@ -667,30 +592,8 @@ module "kasmvnc" {
   source              = "registry.coder.com/coder/kasmvnc/coder"
   version             = "1.2.6"
   agent_id            = coder_agent.main.id
-  desktop_environment = "xfce"
+  desktop_environment = "kde"
   subdomain           = true
-}
-
-module "github-upload-public-key" {
-  count    = 0 # Deshabilitado temporalmente (external-auth no configurado)
-  source   = "registry.coder.com/coder/github-upload-public-key/coder"
-  version  = "1.0.32"
-  agent_id = coder_agent.main.id
-}
-
-module "jupyterlab" {
-  count = 0
-  # Deshabilitado temporalmente
-  source   = "registry.coder.com/coder/jupyterlab/coder"
-  version  = "1.2.1"
-  agent_id = coder_agent.main.id
-}
-
-module "cursor" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/cursor/coder"
-  version  = "1.3.3"
-  agent_id = coder_agent.main.id
 }
 
 module "filebrowser" {
@@ -698,6 +601,7 @@ module "filebrowser" {
   source   = "registry.coder.com/coder/filebrowser/coder"
   version  = "1.1.3"
   agent_id = coder_agent.main.id
+  folder   = "/home/coder/project"
 }
 
 module "opencode" {
@@ -707,10 +611,7 @@ module "opencode" {
   workdir  = "/home/coder/"
 }
 
-# ---------------------------------------------------------------
 # HOME PERSISTENTE
-# ---------------------------------------------------------------
-
 resource "docker_volume" "home_volume" {
   count = local.home_host_path == "" && local.home_volume_existing == "" ? 1 : 0
   name  = local.home_volume_resolved
@@ -737,10 +638,7 @@ resource "docker_volume" "home_volume" {
   }
 }
 
-# ---------------------------------------------------------------
-# CONTENEDOR PRINCIPAL DEL WORKSPACE
-# ---------------------------------------------------------------
-
+# CONTENEDOR PRINCIPAL
 resource "docker_container" "workspace" {
   image = local.workspace_image
 
@@ -748,8 +646,6 @@ resource "docker_container" "workspace" {
   hostname = data.coder_workspace.me.name
 
   user = local.home_host_uid != "" ? local.home_host_uid : "coder"
-  # Acceso directo a la red del host (sin mapeo de puertos)
-  network_mode = "host"
 
   entrypoint = [
     "sh",
@@ -760,19 +656,10 @@ resource "docker_container" "workspace" {
   env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
     "TZ=Europe/Madrid",
-    "NVIDIA_VISIBLE_DEVICES=all",
+    "NVIDIA_VISIBLE_DEVICES=${local.enable_gpu ? "all" : ""}",
     "NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,video"
   ]
 
-  # Permiso para usar Docker del host
-  group_add = ["995"]
-
-  volumes {
-    host_path      = "/var/run/docker.sock"
-    container_path = "/var/run/docker.sock"
-  }
-
-  # Para mejorar KasmVNC y navegadores
   shm_size = 2 * 1024 * 1024 * 1024
   # Permitir FUSE/SSHFS y montajes remotos
   capabilities {
