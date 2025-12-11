@@ -26,7 +26,7 @@ RUN dpkg --add-architecture i386 && \
         jq \
         curl wget \
         ca-certificates \
-        libc6:i386 libstdc++6:i386 libgcc-s1:i386 libz1:i386 libncurses5:i386 \
+        libc6:i386 libstdc++6:i386 libgcc-s1:i386 libz1:i386 libncurses6:i386 \
         libpulse0 \
         adb \
         dnsutils net-tools iputils-ping \
