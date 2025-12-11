@@ -154,17 +154,17 @@ data "coder_parameter" "claude_token" {
   type         = "string"
   default      = ""
 
-  mutable      = true
+  mutable = true
 }
 
 locals {
-  username        = data.coder_workspace_owner.me.name
-  workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
-  port_range      = data.coder_parameter.expose_ports.value ? range(data.coder_parameter.port_range_start.value, data.coder_parameter.port_range_end.value + 1) : []
-  enable_gpu      = data.coder_parameter.enable_gpu.value
-  home_host_path  = trimspace(data.coder_parameter.home_host_path.value)
-  home_host_uid   = trimspace(data.coder_parameter.home_host_uid.value)
-  host_data_path  = trimspace(data.coder_parameter.host_data_path.value)
+  username             = data.coder_workspace_owner.me.name
+  workspace_image      = "ghcr.io/makespacemadrid/coder-mks-developer:latest"
+  port_range           = data.coder_parameter.expose_ports.value ? range(data.coder_parameter.port_range_start.value, data.coder_parameter.port_range_end.value + 1) : []
+  enable_gpu           = data.coder_parameter.enable_gpu.value
+  home_host_path       = trimspace(data.coder_parameter.home_host_path.value)
+  home_host_uid        = trimspace(data.coder_parameter.home_host_uid.value)
+  host_data_path       = trimspace(data.coder_parameter.host_data_path.value)
   home_volume_existing = trimspace(data.coder_parameter.home_volume_existing.value)
   home_volume_name     = trimspace(data.coder_parameter.home_volume_name.value)
   home_volume_resolved = coalesce(
@@ -297,8 +297,8 @@ PULSECFG
 #!/usr/bin/env bash
 set -euo pipefail
 KEY_ENDPOINT="https://prod8n.mksmad.org/webhook/94b9b71a-dc18-4c69-88d6-5b02100bf577"
-PROVIDER="${OPENCODE_PROVIDER_URL:-http://iapi.mksmad.org}"
-EMAIL="${CODER_USER_EMAIL:-}"
+PROVIDER="$${OPENCODE_PROVIDER_URL:-http://iapi.mksmad.org}"
+EMAIL="$${CODER_USER_EMAIL:-}"
 alias="coder-$(tr -dc 0-9 </dev/urandom 2>/dev/null | head -c 8 | sed 's/^$/00000000/')"
 if [ -z "$EMAIL" ]; then
   echo "Falta CODER_USER_EMAIL para solicitar la key" >&2
@@ -667,11 +667,11 @@ JSONCFG
   EOT
 
   env = {
-    GIT_AUTHOR_NAME     = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
-    GIT_AUTHOR_EMAIL    = data.coder_workspace_owner.me.email
-    GIT_COMMITTER_NAME  = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
-    GIT_COMMITTER_EMAIL = data.coder_workspace_owner.me.email
-    HOME                = "/home/coder"
+    GIT_AUTHOR_NAME       = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
+    GIT_AUTHOR_EMAIL      = data.coder_workspace_owner.me.email
+    GIT_COMMITTER_NAME    = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
+    GIT_COMMITTER_EMAIL   = data.coder_workspace_owner.me.email
+    HOME                  = "/home/coder"
     OPENCODE_PROVIDER_URL = data.coder_parameter.opencode_provider_url.value
     OPENCODE_API_KEY      = data.coder_parameter.opencode_api_key.value
     CODER_USER_EMAIL      = data.coder_workspace_owner.me.email
@@ -762,12 +762,12 @@ resource "coder_script" "setup_pipx" {
 }
 
 module "code-server" {
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/code-server/coder"
-  version  = "~> 1.0"
-  agent_id = coder_agent.main.id
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/code-server/coder"
+  version    = "~> 1.0"
+  agent_id   = coder_agent.main.id
   extensions = local.vscode_extensions
-  order    = 1
+  order      = 1
 }
 
 module "git-config" {
@@ -778,12 +778,12 @@ module "git-config" {
 }
 
 module "git-clone" {
-  count       = data.coder_parameter.git_repo_url.value != "" ? data.coder_workspace.me.start_count : 0
-  source      = "registry.coder.com/coder/git-clone/coder"
-  version     = "1.2.2"
-  agent_id    = coder_agent.main.id
-  url         = data.coder_parameter.git_repo_url.value
-  base_dir    = "~/projects"
+  count    = data.coder_parameter.git_repo_url.value != "" ? data.coder_workspace.me.start_count : 0
+  source   = "registry.coder.com/coder/git-clone/coder"
+  version  = "1.2.2"
+  agent_id = coder_agent.main.id
+  url      = data.coder_parameter.git_repo_url.value
+  base_dir = "~/projects"
 }
 
 module "coder-login" {

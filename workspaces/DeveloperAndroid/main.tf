@@ -98,12 +98,12 @@ data "coder_parameter" "opencode_api_key" {
 }
 
 locals {
-  username        = data.coder_workspace_owner.me.name
-  workspace_image = "ghcr.io/makespacemadrid/coder-mks-developer-android:latest"
-  enable_gpu      = data.coder_parameter.enable_gpu.value
-  home_host_path  = trimspace(data.coder_parameter.home_host_path.value)
-  home_host_uid   = trimspace(data.coder_parameter.home_host_uid.value)
-  host_data_path  = trimspace(data.coder_parameter.host_data_path.value)
+  username             = data.coder_workspace_owner.me.name
+  workspace_image      = "ghcr.io/makespacemadrid/coder-mks-developer-android:latest"
+  enable_gpu           = data.coder_parameter.enable_gpu.value
+  home_host_path       = trimspace(data.coder_parameter.home_host_path.value)
+  home_host_uid        = trimspace(data.coder_parameter.home_host_uid.value)
+  host_data_path       = trimspace(data.coder_parameter.host_data_path.value)
   home_volume_existing = trimspace(data.coder_parameter.home_volume_existing.value)
   home_volume_name     = trimspace(data.coder_parameter.home_volume_name.value)
   home_volume_resolved = coalesce(
@@ -201,8 +201,8 @@ PULSECFG
 #!/usr/bin/env bash
 set -euo pipefail
 KEY_ENDPOINT="https://prod8n.mksmad.org/webhook/94b9b71a-dc18-4c69-88d6-5b02100bf577"
-PROVIDER="${OPENCODE_PROVIDER_URL:-http://iapi.mksmad.org}"
-EMAIL="${CODER_USER_EMAIL:-}"
+PROVIDER="$${OPENCODE_PROVIDER_URL:-http://iapi.mksmad.org}"
+EMAIL="$${CODER_USER_EMAIL:-}"
 alias="coder-$(tr -dc 0-9 </dev/urandom 2>/dev/null | head -c 8 | sed 's/^$/00000000/')"
 if [ -z "$EMAIL" ]; then
   echo "Falta CODER_USER_EMAIL para solicitar la key" >&2
@@ -566,12 +566,12 @@ module "git-config" {
 }
 
 module "git-clone" {
-  count       = data.coder_parameter.git_repo_url.value != "" ? data.coder_workspace.me.start_count : 0
-  source      = "registry.coder.com/coder/git-clone/coder"
-  version     = "1.2.2"
-  agent_id    = coder_agent.main.id
-  url         = data.coder_parameter.git_repo_url.value
-  base_dir    = "~/projects"
+  count    = data.coder_parameter.git_repo_url.value != "" ? data.coder_workspace.me.start_count : 0
+  source   = "registry.coder.com/coder/git-clone/coder"
+  version  = "1.2.2"
+  agent_id = coder_agent.main.id
+  url      = data.coder_parameter.git_repo_url.value
+  base_dir = "~/projects"
 }
 
 module "coder-login" {
@@ -666,9 +666,9 @@ resource "docker_container" "workspace" {
     add = ["SYS_ADMIN"]
   }
   devices {
-    host_path          = "/dev/fuse"
-    container_path     = "/dev/fuse"
-    permissions        = "rwm"
+    host_path      = "/dev/fuse"
+    container_path = "/dev/fuse"
+    permissions    = "rwm"
   }
 
   dynamic "volumes" {

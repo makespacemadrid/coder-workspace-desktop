@@ -148,8 +148,13 @@ jobs:
         include:
           - image_name: coder-mks-developer
             context: Docker-Images/Developer
+            base_dep: desktop
           - image_name: coder-mks-design
             context: Docker-Images/Designer
+            base_dep: desktop-kde
+          - image_name: coder-mks-developer-android
+            context: Docker-Images/DeveloperAndroid
+            base_dep: desktop-kde
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -157,10 +162,15 @@ jobs:
       - name: Detect changes for image
         id: changes
         run: |
-          # If desktop rebuilt, force dependent images to rebuild
-          if [ "${{ needs.build-desktop.outputs.run_build }}" = "true" ]; then
+          # If a base image rebuilt, force dependent images to rebuild
+          if [ "${{ matrix.base_dep }}" = "desktop" ] && [ "${{ needs.build-desktop.outputs.run_build }}" = "true" ]; then
             echo "run_build=true" >> "$GITHUB_OUTPUT"
             echo "Desktop rebuilt; forcing build for ${{ matrix.image_name }}."
+            exit 0
+          fi
+          if [ "${{ matrix.base_dep }}" = "desktop-kde" ] && [ "${{ needs.build-desktop-kde.outputs.run_build }}" = "true" ]; then
+            echo "run_build=true" >> "$GITHUB_OUTPUT"
+            echo "Desktop-KDE rebuilt; forcing build for ${{ matrix.image_name }}."
             exit 0
           fi
 
